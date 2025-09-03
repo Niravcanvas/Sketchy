@@ -1,0 +1,18 @@
+{
+  "extends": "@sketchy/config/tsconfig.base.json",
+  "compilerOptions": {
+    // Covers `..` (the whole package), not just `.` — this file imports from `../src/*`,
+    // and `rootDir` must contain every file TS pulls into the program, not just the
+    // `include` roots. `noEmit: true` makes this purely a type-check boundary (no output
+    // path is ever computed from it).
+    "rootDir": "..",
+    // Unlike ../tsconfig.json (which covers `src/`, the portable code an RN app would
+    // import — phase 17 task 3 — and deliberately withholds Node ambient globals), this
+    // script is explicitly Node-only (this module's own doc comment) and legitimately needs
+    // `process`/`node:*` module typings.
+    "types": ["node"],
+    "lib": ["ES2022", "DOM"],
+    "noEmit": true
+  },
+  "include": ["."]
+}
