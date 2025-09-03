@@ -1,0 +1,162 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    # `pnpm test` recurses into the `@sketchy/api` suite, whose vitest global-setup
+    # opens a real Postgres admin connection (to drop/recreate `sketchy_test`) and the
+    # Socket.IO Redis adapter opens real Redis connections at `buildServer()` time —
+    # both happen before any test body runs, so this job must provision its own
+    # Postgres/Redis just like contract-verification below. The global-setup overrides
+    # DATABASE_URL→`sketchy_test` and REDIS_URL→db 1 at runtime and applies migrations
+    # itself; the env vars below are only the startup fallback before that override.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sketchy
+          POSTGRES_PASSWORD: sketchy
+          POSTGRES_DB: sketchy
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sketchy"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://sketchy:sketchy@localhost:5432/sketchy
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: dev-only-change-me
+      ADMIN_TOKEN: dev-only-change-me
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      # Phase 17 task 3: packages/engine + packages/shared must compile for a
+      # React-Native/Metro-style target with zero patches (arch/mobile-notes.md).
+      - run: pnpm check:rn-build
+
+  # The `/v1` contract freeze's enforcement mechanism. Regenerates the LIVE OpenAPI spec
+  # and the headless reference client both need a real Postgres/Redis (the Socket.IO Redis
+  # adapter opens real connections at `buildServer()` time, not just on request) —
+  # provisioned as services here. Both this job and `checks` above now provision their own
+  # Postgres/Redis; the authoritative `@sketchy/api` suite against real infra is
+  # `deploy/compose.dev.yml`, documented in arch/api-contract.md.
+  contract-verification:
+    needs: checks
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sketchy
+          POSTGRES_PASSWORD: sketchy
+          POSTGRES_DB: sketchy
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sketchy"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://sketchy:sketchy@localhost:5432/sketchy
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: dev-only-change-me
+      ADMIN_TOKEN: dev-only-change-me
+      PORT: 4100
+      PUBLIC_API_URL: http://localhost:4100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sketchy/api db:migrate
+      - run: pnpm --filter @sketchy/api db:seed
+
+      # --- Breaking-change gate: live /v1 OpenAPI spec vs. the committed baseline ---
+      - name: Generate live OpenAPI spec
+        # In-process (apps/api/scripts/print-openapi.ts) — no listening port, no polling.
+        # PUBLIC_API_URL is set above (job env) only for the headless-client steps below;
+        # unset it here so `servers` matches the baseline's `[]` (server.ts, api-contract.md
+        # §0) — the exact same invocation `arch/openapi-v1.baseline.json`'s regeneration
+        # recipe documents.
+        run: PUBLIC_API_URL= pnpm --filter @sketchy/api print:openapi /tmp/openapi-live.json
+      - name: Breaking-change gate (oasdiff)
+        uses: oasdiff/oasdiff-action/breaking@v0
+        with:
+          base: arch/openapi-v1.baseline.json
+          revision: /tmp/openapi-live.json
+          fail-on: ERR
+
+      # --- Headless reference client: full game, real HTTP + WebSocket, from outside the
+      # API process (plan/phase17.md task 2 "CI smoke test candidate") ---
+      - name: Build API
+        run: pnpm --filter @sketchy/api build
+      - name: Start API in the background
+        run: |
+          nohup node apps/api/dist/index.cjs > /tmp/api.log 2>&1 &
+          echo $! > /tmp/api.pid
+      - name: Wait for API health
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4100/v1/health > /dev/null; then
+              echo "API is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API did not become healthy in time"
+          cat /tmp/api.log
+          exit 1
+      - name: Run headless reference client (full game to a win)
+        run: pnpm --filter @sketchy/shared example:headless-client
+      - name: Stop API
+        if: always()
+        run: kill "$(cat /tmp/api.pid)" 2>/dev/null || true
+      - name: API logs
+        if: failure()
+        run: cat /tmp/api.log
+
+  docker:
+    needs: checks
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [web, api]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f apps/${{ matrix.app }}/Dockerfile .
