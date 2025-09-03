@@ -1,0 +1,23 @@
+{
+  "name": "@sketchy/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./eslint": "./eslint.config.mjs",
+    "./prettier": "./prettier.config.mjs",
+    "./tailwind-preset": "./tailwind-preset.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.7.0",
+    "typescript-eslint": "^8.62.1"
+  },
+  "dependencies": {
+    "tailwindcss": "^3"
+  }
+}
