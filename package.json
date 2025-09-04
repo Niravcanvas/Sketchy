@@ -1,0 +1,27 @@
+{
+  "name": "sketchy",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write .",
+    "db:migrate": "pnpm --filter @sketchy/api db:migrate",
+    "db:seed": "pnpm --filter @sketchy/api db:seed",
+    "check:rn-build": "node scripts/check-rn-build.mjs"
+  },
+  "prettier": "@sketchy/config/prettier",
+  "devDependencies": {
+    "@sketchy/config": "workspace:*",
+    "esbuild": "^0.28.1",
+    "eslint": "^9.39.4",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  }
+}
