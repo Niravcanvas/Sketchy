@@ -1,0 +1,46 @@
+{
+  "name": "@sketchy/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "build:starter-pack": "node scripts/build-starter-pack.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:online": "playwright test --config playwright.online.config.ts",
+    "test:e2e:voice": "playwright test --config playwright.voice.config.ts"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.18",
+    "@sentry/react": "^10.66.0",
+    "@sketchy/engine": "workspace:^",
+    "@sketchy/shared": "workspace:^",
+    "@tanstack/react-query": "^5.101.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "livekit-client": "^2.20.1",
+    "next": "^15.5.20",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "socket.io-client": "^4.8.3",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@sketchy/config": "workspace:^",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^26.1.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "autoprefixer": "^10.5.2",
+    "jsdom": "^29.1.1",
+    "postcss": "^8.5.16",
+    "tailwindcss": "^3",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.9"
+  }
+}
