@@ -1,0 +1,18 @@
+{
+  "extends": "@sketchy/config/tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "types": [],
+    // client.ts types `fetch`/`URL`/`Headers` against lib.dom.d.ts — the same
+    // WHATWG fetch surface Node's global `fetch` implements, so this stays a
+    // types-only addition (no ambient globals actually requiring a browser).
+    "lib": ["ES2022", "DOM"]
+  },
+  // Deliberately excludes `examples/` (phase 17's headless-client.ts) — it has its own
+  // `examples/tsconfig.json` with Node ambient types enabled, which this config's `types:
+  // []` intentionally withholds from `src/` (a `/// <reference types="node">` in ANY file
+  // TS compiles together would leak Node globals program-wide, not just into that file —
+  // hence the separate project rather than a reference directive). `pnpm typecheck`
+  // (package.json) runs both projects.
+  "include": ["src"]
+}
