@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1783028230860,
+      "tag": "0000_foamy_silver_centurion",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784341293444,
+      "tag": "0001_add_pack_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784460802415,
+      "tag": "0002_phase16_moderation",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784490928681,
+      "tag": "0003_breezy_barracuda",
+      "breakpoints": true
+    }
+  ]
+}
