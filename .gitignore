@@ -1,0 +1,19 @@
+node_modules/
+.next/
+dist/
+coverage/
+.env
+*.log
+.DS_Store
+.eslintcache
+tsconfig.tsbuildinfo
+
+# Playwright artifacts
+test-results/
+playwright-report/
+
+# Local agent working dir (settings, transient agent worktrees) — never commit
+.claude/
+
+# Archived internal working docs (roadmap + pre-deploy audits) — kept on disk, out of git
+mess/
