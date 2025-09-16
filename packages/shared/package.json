@@ -1,0 +1,27 @@
+{
+  "name": "@sketchy/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit && tsc --noEmit -p examples/tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "example:headless-client": "tsx examples/headless-client.ts"
+  },
+  "dependencies": {
+    "@sketchy/engine": "workspace:^",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@sketchy/config": "workspace:^",
+    "@types/node": "^26.1.0",
+    "jose": "^6.2.3",
+    "socket.io-client": "^4.8.3",
+    "tsx": "^4.22.5",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.9"
+  }
+}
