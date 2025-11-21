@@ -1,0 +1,301 @@
+{
+  "name": "Starter pack",
+  "language": "en",
+  "pairs": [
+    {
+      "wordA": "waffle",
+      "wordB": "pancake",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "burger",
+      "wordB": "hot dog",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "pizza",
+      "wordB": "calzone",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "dog",
+      "wordB": "wolf",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "horse",
+      "wordB": "zebra",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "duck",
+      "wordB": "goose",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "sofa",
+      "wordB": "armchair",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "backpack",
+      "wordB": "suitcase",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "umbrella",
+      "wordB": "parasol",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "doctor",
+      "wordB": "nurse",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "teacher",
+      "wordB": "professor",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "chef",
+      "wordB": "baker",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "Netflix",
+      "wordB": "Hulu",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "cartoon",
+      "wordB": "anime",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "sitcom",
+      "wordB": "soap opera",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "iPhone",
+      "wordB": "Android",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "PlayStation",
+      "wordB": "Xbox",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "Google",
+      "wordB": "Bing",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "beach",
+      "wordB": "lake",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "mountain",
+      "wordB": "hill",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "hotel",
+      "wordB": "motel",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "happiness",
+      "wordB": "sadness",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "joy",
+      "wordB": "relief",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "anger",
+      "wordB": "fear",
+      "difficulty": "easy"
+    },
+    {
+      "wordA": "sushi",
+      "wordB": "sashimi",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "latte",
+      "wordB": "cappuccino",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "quesadilla",
+      "wordB": "grilled cheese",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "eagle",
+      "wordB": "hawk",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "octopus",
+      "wordB": "squid",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "raccoon",
+      "wordB": "possum",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "magnet",
+      "wordB": "sticker",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "futon",
+      "wordB": "couch",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "tablecloth",
+      "wordB": "placemat",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "accountant",
+      "wordB": "auditor",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "lawyer",
+      "wordB": "paralegal",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "surgeon",
+      "wordB": "dentist",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "Twitter",
+      "wordB": "Threads",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "Discord",
+      "wordB": "Slack",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "Spotify",
+      "wordB": "Apple Music",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "TikTok",
+      "wordB": "Instagram Reels",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "Reddit",
+      "wordB": "Quora",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "hostel",
+      "wordB": "bed and breakfast",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "cruise",
+      "wordB": "ferry",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "resort",
+      "wordB": "cabin",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "frustration",
+      "wordB": "irritation",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "anxiety",
+      "wordB": "worry",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "optimism",
+      "wordB": "hope",
+      "difficulty": "medium"
+    },
+    {
+      "wordA": "jam",
+      "wordB": "jelly",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "yam",
+      "wordB": "sweet potato",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "alligator",
+      "wordB": "crocodile",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "bison",
+      "wordB": "buffalo",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "mug",
+      "wordB": "cup",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "bowl",
+      "wordB": "plate",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "captain",
+      "wordB": "first officer",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "detective",
+      "wordB": "private investigator",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "movie",
+      "wordB": "film",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "app",
+      "wordB": "website",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "river",
+      "wordB": "canal",
+      "difficulty": "hard"
+    },
+    {
+      "wordA": "courage",
+      "wordB": "bravery",
+      "difficulty": "hard"
+    }
+  ]
+}
