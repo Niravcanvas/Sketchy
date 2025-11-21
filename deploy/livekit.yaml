@@ -1,0 +1,59 @@
+# Production LiveKit config — mounted read-only into the `livekit` service
+# (deploy/compose.prod.yml) as /etc/livekit.yaml and selected with `--config`.
+# deploy/RUNBOOK.md's "Voice" section is the full provisioning story.
+#
+# The API key/secret are NOT here — they arrive via the LIVEKIT_KEYS env var on the
+# container (from deploy/.env.prod's LIVEKIT_API_KEY / LIVEKIT_API_SECRET), so no real
+# secret is ever committed. Everything else — the RTC ports and the embedded TURN
+# server — lives here.
+#
+# BEFORE DEPLOYING: replace `voice.sketchy.example` below with the real voice subdomain
+# (the same host as VOICE_DOMAIN in deploy/.env.prod and the Caddyfile). LiveKit does NOT
+# expand ${ENV} inside this file, so this one value is edited in place, not interpolated.
+#
+# PORT NUMBERS BELOW ARE DELIBERATELY NOT LiveKit's stock defaults (7881 / 50000-60000 /
+# 3478 / 5349) — those exact numbers are what every LiveKit tutorial ships, so they're the
+# first thing a port scanner tries and the most likely to already be bound by something
+# else on a shared/pre-used VPS. `port: 7880` below is untouched on purpose: it's never
+# published to the host (Caddy reaches it over the internal compose network only — see
+# compose.prod.yml), so it carries none of that collision risk and there's nothing to gain
+# by moving it. Same reasoning already applies to postgres/redis, which also publish no
+# host ports at all (compose.prod.yml).
+#
+# If these NEW numbers ever turn out to collide on a specific box, change them here AND in
+# the matching `ports:` entries in compose.prod.yml TOGETHER — they must stay numerically
+# IDENTICAL on both sides (host:container, no offset). LiveKit tells the CLIENT to dial the
+# exact port number it thinks it's bound to (that's what it advertises in ICE candidates);
+# if Docker maps a different host-side number, the client dials a port nothing is actually
+# listening on and the connection times out. No app code changes needed either way.
+
+port: 7880 # HTTP/WS signaling. Caddy reverse-proxies voice.<domain> here over the compose network.
+
+rtc:
+  tcp_port: 31881 # ICE/TCP fallback for clients whose network blocks UDP outright.
+  # ICE/UDP media. ~1 port per concurrent voice participant at peak; 1000 ports covers the
+  # "low hundreds of concurrent players" launch target (system-design.md §0) with headroom.
+  # Resize per RUNBOOK "Voice" §3 if real numbers say otherwise — keep it in sync with the
+  # published range in compose.prod.yml.
+  port_range_start: 32000
+  port_range_end: 32999
+  # The advertised public address comes from the command line (--node-ip=${VPS_PUBLIC_IP}),
+  # so external-IP auto-detection is off — same intent as the dev config's 127.0.0.1.
+  use_external_ip: false
+
+# Embedded TURN — backup route #2 for symmetric NATs and firewalls that only allow
+# outbound 443 (RUNBOOK "Voice" §4). UDP TURN (33478) is active now and needs no cert.
+turn:
+  enabled: true
+  domain: voice.sketchy.example # ← replace with the real voice subdomain before deploy.
+  udp_port: 33478
+  # ---------------------------------------------------------------------------------------
+  # TURN-over-TLS on 33349 is the ONE remaining step, and it's the reach-maximizing one:
+  # it lets clients on networks that block all UDP tunnel media over TCP/TLS. It needs a
+  # publicly-trusted cert for `domain` above (the DNS-only voice host — a Cloudflare origin
+  # cert will NOT work). Once you've placed that cert at deploy/certs/voice.pem +
+  # voice-key.pem (RUNBOOK "Voice" §4 lists the ways to source it), uncomment these three
+  # lines. TCP 33349 is already published by compose, so no other change is needed.
+  # tls_port: 33349
+  # cert_file: /etc/livekit/certs/voice.pem
+  # key_file: /etc/livekit/certs/voice-key.pem
