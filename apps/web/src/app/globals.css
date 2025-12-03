@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Palette tokens as CSS custom properties, mirroring the Tailwind preset
+ * (@sketchy/config/tailwind-preset, values verbatim from
+ * arch/design-party-pop.md §2). Tailwind utility classes are the source of
+ * truth for styling components; these custom properties exist only so
+ * SVG/JS surfaces (PopTimerRing arc, avatar ink) can resolve a palette
+ * token to a real color via src/lib/palette-tokens.ts. Keep in sync with
+ * the preset if a token changes.
+ */
+:root {
+  --color-paper: #efeaff;
+  --color-paper-2: #ffffff;
+  --color-ink: #14120b;
+  --color-graphite: #5c5647;
+  --color-civilian: #2f6ff2;
+  --color-undercover: #ff4d3d;
+  --color-mrwhite: #8b5cf6;
+  --color-highlight: #ffd23f;
+  --color-success: #2fa85f;
+  --color-phase-discuss: #d9f2e2;
+  --color-phase-vote: #ffefb8;
+  --color-phase-reveal: #ffdcd6;
+}
+
+body {
+  @apply bg-paper text-ink;
+  min-height: 100vh;
+}
+
+/*
+ * Accessibility baseline (design-party-pop.md §2): focus states always use a
+ * 3px ink outline, everywhere, regardless of the element's own styling.
+ * (Replaces the old highlight-yellow outline — yellow fails the 3:1 focus
+ * indicator contrast requirement on the lilac ground.)
+ */
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/*
+ * Party Pop motion vocabulary (design-party-pop.md §7). Drama-beat entrances only —
+ * never idle loops. Every one honors prefers-reduced-motion by dropping the transform
+ * and rendering the element in its final, fully-legible state (information is never
+ * removed, only the movement is).
+ */
+
+/* Slam — interstitial titles, win headline, "OUT" tags. */
+@keyframes pop-slam {
+  from {
+    transform: scale(2.2) rotate(-14deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(-3deg);
+    opacity: 1;
+  }
+}
+
+.pnp-slam {
+  animation: pop-slam 450ms cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+/* Toast slam — translate-and-settle (design-party-pop.md §11), no rotation. */
+@keyframes pop-toast-slam {
+  from {
+    transform: translateY(-16px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.pnp-toast-slam {
+  animation: pop-toast-slam 250ms cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+/* Pop-in — countdown digits, score bumps. */
+@keyframes pop-in {
+  from {
+    transform: scale(1.6);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.pnp-pop-in {
+  animation: pop-in 500ms cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+/*
+ * Flip — role-reveal card turns (deal/peek cards, elimination reveal). Shared by
+ * `components/pnp/peek-card.tsx`, `components/room/game/deal-screen.tsx`, and both
+ * `reveal-screen.tsx` files — a real `rotateY` transform under normal motion, a plain
+ * fade under prefers-reduced-motion (never remove information, only the movement).
+ */
+@keyframes pop-card-flip {
+  from {
+    transform: rotateY(90deg) scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pop-card-flip-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.pnp-flip-card {
+  animation: pop-card-flip 700ms ease-out both;
+  backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pnp-slam,
+  .pnp-toast-slam,
+  .pnp-pop-in {
+    animation: none;
+  }
+
+  .pnp-flip-card {
+    animation: pop-card-flip-fade 250ms ease-out both;
+  }
+}
