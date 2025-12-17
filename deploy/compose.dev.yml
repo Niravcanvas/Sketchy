@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: sketchy
+      POSTGRES_PASSWORD: sketchy
+      POSTGRES_DB: sketchy
+    ports:
+      - '5432:5432'
+    volumes:
+      - sketchy-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sketchy -d sketchy']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6379:6379'
+    volumes:
+      - sketchy-redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Phase 15 — self-hosted LiveKit SFU, audio-only voice (system-design.md §8, plan/phase15.md
+  # task 1a). Local-only dev config: `--node-ip=127.0.0.1` makes LiveKit advertise ICE
+  # candidates the HOST machine's own browser can dial (correct because `docker compose`
+  # publishes these ports straight onto the host's localhost); this is NOT how prod is
+  # configured (deploy/RUNBOOK.md's "Voice (phase 15) — NOT DEPLOYED" section has the real
+  # `voice.<domain>` / grey-cloud DNS story for that). Dev API key/secret below are
+  # deliberately trivial and MUST NOT be reused anywhere real — they only need to match
+  # `.env.example`'s `LIVEKIT_API_KEY`/`LIVEKIT_API_SECRET` dev defaults so `apps/api`'s
+  # `getEnv()` dev-defaults line up with zero flag plumbing (same convention as
+  # postgres/redis above).
+  livekit:
+    image: livekit/livekit-server:latest
+    command: ['--node-ip=127.0.0.1', '--bind', '0.0.0.0']
+    environment:
+      LIVEKIT_KEYS: 'devkey: devsecret-do-not-use-in-prod-32chars'
+      LIVEKIT_RTC_TCP_PORT: '7881'
+      # 100 UDP ports — sized from a real local load test (plan/phase15-handoff.md): 8 rooms ×
+      # 8 audio publishers (64 concurrent participants) connected cleanly with a 200-port
+      # range; a too-narrow 20-port range measurably dropped exactly half the publishers
+      # (UDP port exhaustion, not a LiveKit or app bug). 100 leaves real headroom over the
+      # dev load-test's own 64-participant ceiling without mapping LiveKit's full default
+      # 50000-60000 (10000 ports), which is unnecessarily heavy for `docker compose up` on a
+      # laptop.
+      LIVEKIT_RTC_PORT_RANGE_START: '50000'
+      LIVEKIT_RTC_PORT_RANGE_END: '50099'
+      LIVEKIT_RTC_USE_EXTERNAL_IP: 'false'
+    ports:
+      - '7880:7880' # HTTP/WS signaling (LIVEKIT_URL / NEXT_PUBLIC_LIVEKIT_URL point here)
+      - '7881:7881' # ICE/TCP fallback
+      - '50000-50099:50000-50099/udp' # ICE/UDP range, see the sizing note above
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:7880/ || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  sketchy-postgres-data:
+  sketchy-redis-data:
