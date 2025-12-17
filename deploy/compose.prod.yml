@@ -1,0 +1,234 @@
+# Production stack (arch/system-design.md §9): caddy + web + api + postgres + redis +
+# livekit, one VPS, systemd-managed. The livekit voice SFU is now part of the stack, but
+# it stays inert until it's provisioned (DNS + cert + firewall — see deploy/RUNBOOK.md
+# "Voice") and VOICE_ENABLED=true; the game runs fine with voice off. Outbound email needs
+# no new container — it's an HTTPS POST from the existing api service, flip EMAIL_PROVIDER
+# when the provider is ready (RUNBOOK "Email").
+#
+# Usage (from the repo root):
+#   cp deploy/.env.prod.example deploy/.env.prod   # fill in real secrets/domains, never commit it
+#   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod build
+#   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile migrate run --rm migrate
+#   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod up -d
+#   # voice is opt-in — add `--profile voice` once it's provisioned (RUNBOOK "Voice"):
+#   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile voice up -d
+#
+# WEB_IMAGE / API_IMAGE default to locally-built tags so this works standalone today.
+# Once CI pushes images to a registry (system-design.md §9's "push to GHCR" step — not
+# wired up yet, see deploy/RUNBOOK.md), point those two vars at the pushed tags and
+# `docker compose pull` replaces the local build.
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./certs:/etc/caddy/certs:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+      API_DOMAIN: ${API_DOMAIN}
+      # voice.<domain> for the LiveKit control-plane. Defaults to voice.localhost — an
+      # inert site Caddy serves with an internal (self-signed) cert, no public ACME — so
+      # shipping this Caddyfile never breaks app/api even before voice DNS exists. Set the
+      # real host to activate the voice route (RUNBOOK "Voice" §2).
+      VOICE_DOMAIN: ${VOICE_DOMAIN:-voice.localhost}
+    depends_on:
+      # NOT livekit: voice is optional, and Caddy resolves livekit:7880 lazily per request,
+      # so a down/absent livekit only fails voice requests, never app/api.
+      - web
+      - api
+
+  web:
+    image: ${WEB_IMAGE:-sketchy-web:local}
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        PUBLIC_API_URL: ${PUBLIC_API_URL}
+        SENTRY_DSN: ${SENTRY_DSN}
+        NEXT_PUBLIC_GITHUB_URL: ${NEXT_PUBLIC_GITHUB_URL:-}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
+        # Build-time fallback for the client's LiveKit URL. The API's voice-token
+        # response carries the authoritative url at runtime, so this only matters if
+        # that's ever absent — baked in for completeness (Next inlines NEXT_PUBLIC_*).
+        NEXT_PUBLIC_LIVEKIT_URL: ${NEXT_PUBLIC_LIVEKIT_URL:-}
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  api:
+    image: ${API_IMAGE:-sketchy-api:local}
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET_PREVIOUS: ${JWT_SECRET_PREVIOUS:-}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL}
+      PUBLIC_API_URL: ${PUBLIC_API_URL}
+      PORT: 4000
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SENTRY_DSN: ${SENTRY_DSN}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_BUCKET: ${R2_BUCKET}
+      R2_PUBLIC_BASE_URL: ${R2_PUBLIC_BASE_URL}
+      # Deferred surfaces — kept off via the app's own kill-switches (RUNBOOK.md) until
+      # DNS/provider/OAuth provisioning happens. Safe to leave at these defaults.
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-log}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_API_KEY: ${EMAIL_API_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_SIGNIN_ENABLED: ${GOOGLE_SIGNIN_ENABLED:-false}
+      VOICE_ENABLED: ${VOICE_ENABLED:-false}
+      LIVEKIT_URL: ${LIVEKIT_URL:-}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-}
+      # Optional tuning — blank means "use the code default" (see .env.example).
+      MATCH_INTERVAL_MS: ${MATCH_INTERVAL_MS:-}
+      MATCH_FORM_AFTER_MS: ${MATCH_FORM_AFTER_MS:-}
+      MATCH_STALE_MS: ${MATCH_STALE_MS:-}
+      GRACE_WINDOW_MS: ${GRACE_WINDOW_MS:-}
+      ABANDON_MS: ${ABANDON_MS:-}
+      ABANDON_SWEEP_MS: ${ABANDON_SWEEP_MS:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      # 127.0.0.1, not localhost: alpine's musl resolver tries ::1 first, and Fastify here
+      # only binds the IPv4 loopback — `localhost` intermittently fails with "connection
+      # refused" even while the process is healthy and serving on 127.0.0.1 fine.
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:4000/v1/health']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # One-off migration runner — NOT part of `up -d` (profiles: [migrate] keeps it out of
+  # the default set). Builds the api Dockerfile's `build` stage, which still has
+  # drizzle-kit + apps/api/drizzle/*.sql (the slim `runtime` stage the `api` service
+  # above uses ships dist/ only, deliberately, so it can't run this itself). Run before
+  # `up -d` on a fresh box and again after any commit that adds a migration:
+  #   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile migrate run --rm migrate
+  migrate:
+    image: ${API_BUILD_IMAGE:-sketchy-api:build}
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+      target: build
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    command: ['pnpm', '--filter', '@sketchy/api', 'db:migrate']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ['migrate']
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    # shared_buffers/max_connections per system-design.md §9 (Drizzle's own pool caps at
+    # 10 per api process — see apps/api/src/db/client.ts — so 50 leaves headroom for the
+    # 2-4 replicas §10's scaling path describes).
+    command: ['postgres', '-c', 'shared_buffers=1GB', '-c', 'max_connections=50']
+    environment:
+      POSTGRES_USER: sketchy
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: sketchy
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sketchy -d sketchy']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # No `ports:` — internal Docker network only (system-design.md §9), same as redis.
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    # noeviction (not the redis default): this holds live room state, not a cache, so
+    # under memory pressure it should refuse writes rather than silently drop a game.
+    command:
+      [
+        'redis-server',
+        '--appendonly',
+        'yes',
+        '--maxmemory',
+        '1gb',
+        '--maxmemory-policy',
+        'noeviction',
+      ]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Self-hosted LiveKit SFU — audio-only voice (system-design.md §8; deploy/RUNBOOK.md
+  # "Voice"). Config is the mounted livekit.yaml; only the real API key/secret arrive via
+  # env (LIVEKIT_KEYS), so no secret lives in a committed file. Nothing depends_on this
+  # service and the app is gated by VOICE_ENABLED, so it can be provisioned/enabled
+  # independently of the rest of the stack.
+  livekit:
+    image: livekit/livekit-server:latest
+    restart: unless-stopped
+    # Opt-in like `migrate`: a plain `up -d` does NOT start livekit, so deploying before
+    # voice is provisioned (no VPS_PUBLIC_IP / cert) can't crash-loop it. Bring voice up with
+    #   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile voice up -d
+    profiles: ['voice']
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+      # Publicly-trusted cert for the voice domain, used ONLY by the embedded TURN-TLS
+      # listener (RUNBOOK "Voice" §4). Not needed for signaling (Caddy terminates that)
+      # or for UDP TURN — drop the cert here when finishing the TURN-TLS step.
+      - ./certs:/etc/livekit/certs:ro
+    environment:
+      # Real key/secret from deploy/.env.prod — NOT the dev pair. LiveKit merges
+      # LIVEKIT_KEYS over the mounted config file.
+      LIVEKIT_KEYS: '${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}'
+    # --node-ip is the VPS's PUBLIC ip (not dev's 127.0.0.1): it's the address LiveKit
+    # advertises as ICE candidates, so a REMOTE browser can reach the media. A wrong value
+    # is the #1 self-host failure — calls time out from outside while the box looks healthy
+    # (RUNBOOK "Voice" §5). VPS_PUBLIC_IP comes from deploy/.env.prod.
+    command: ['--config', '/etc/livekit.yaml', '--node-ip=${VPS_PUBLIC_IP}']
+    # Port numbers are deliberately NOT LiveKit's stock defaults (7881 / 50000-60000 / 3478 /
+    # 5349) — those are what every tutorial ships and the first thing already bound on a
+    # shared/pre-used VPS or probed by a scanner. If any of these collide on a specific box,
+    # change the number here AND in the matching key in deploy/livekit.yaml TOGETHER, keeping
+    # host:container numerically IDENTICAL (no offset) — LiveKit advertises the container-side
+    # port directly to clients, so a Docker-side remap alone breaks the connection silently.
+    ports:
+      - '31881:31881' # ICE/TCP fallback — backup route #1 (UDP-blocked networks)
+      - '32000-32999:32000-32999/udp' # ICE/UDP media, ~1 port/participant (RUNBOOK "Voice" §3)
+      - '33478:33478/udp' # embedded TURN over UDP — backup route #2 (hostile NATs)
+      - '33349:33349/tcp' # embedded TURN over TLS — active once livekit.yaml's tls_port is enabled
+    # 7880 is intentionally NOT published (and NOT renumbered — it's never host-exposed, so
+    # it carries no port-collision risk): Caddy reaches it over the compose network
+    # (reverse_proxy livekit:7880), same pattern as api/web.
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:7880/ || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:
+  redis-data:
+  caddy-data:
+  caddy-config:
