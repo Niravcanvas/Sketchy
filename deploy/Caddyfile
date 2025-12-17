@@ -1,0 +1,38 @@
+# Reverse proxy config (arch/system-design.md §9): routes by hostname to web/api, TLS via
+# a Cloudflare origin certificate (Cloudflare proxy in front runs Full (strict) — this is
+# NOT Caddy's automatic Let's Encrypt HTTPS, which would fail anyway since Cloudflare's
+# orange-cloud proxy intercepts the ACME HTTP-01 challenge). reverse_proxy passes through
+# WebSocket upgrades unmodified, so /socket.io needs no special config.
+#
+# Get the origin cert: Cloudflare dashboard → SSL/TLS → Origin Server → Create Certificate
+# (RSA, covers *.<domain> + <domain>). Save the two PEM blocks as deploy/certs/origin.pem
+# and deploy/certs/origin-key.pem (gitignored — never commit them).
+#
+# {$APP_DOMAIN} / {$API_DOMAIN} / {$VOICE_DOMAIN} come from deploy/.env.prod via compose's
+# `environment:` block on the caddy service (Caddy reads ${$VAR} from its own process
+# environment).
+#
+# voice.<domain> is the ONE exception to the Cloudflare-origin-cert story above: it's a
+# DNS-only (grey-cloud, unproxied) record, so Caddy provisions a normal publicly-trusted
+# ACME cert for it (no `tls` line) — the challenge reaches Caddy directly precisely because
+# nothing proxies that host. See deploy/RUNBOOK.md "Voice" §1–2.
+
+{$APP_DOMAIN} {
+	tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+	reverse_proxy web:3000
+}
+
+{$API_DOMAIN} {
+	tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+	reverse_proxy api:4000
+}
+
+# Voice control-plane (LiveKit WSS/HTTPS signaling only — WebRTC media rides its own
+# UDP/TURN transport straight to the VPS, NOT through here). NO `tls` directive: this host
+# is DNS-only, so Caddy auto-provisions a public ACME cert. VOICE_DOMAIN defaults to
+# voice.localhost (served with Caddy's internal cert, no ACME) when unset, so this block
+# stays inert and never affects app/api until the real voice subdomain is set (RUNBOOK
+# "Voice").
+{$VOICE_DOMAIN:voice.localhost} {
+	reverse_proxy livekit:7880
+}
