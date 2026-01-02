@@ -17,3 +17,5 @@ playwright-report/
 
 # Archived internal working docs (roadmap + pre-deploy audits) — kept on disk, out of git
 mess/
+
+backup/
