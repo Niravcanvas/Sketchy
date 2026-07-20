@@ -22,3 +22,8 @@ backup/
 
 # Generated OpenAPI spec (CI-only)
 openapi-live.json
+
+# Real deploy secrets/certs (deploy/RUNBOOK.md, deploy/Caddyfile) — never commit;
+# deploy/.env.prod.example and deploy/livekit.yaml are templates and stay tracked.
+deploy/.env.prod
+deploy/certs/
