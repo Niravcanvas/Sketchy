@@ -114,9 +114,11 @@ jobs:
         # unset it here so `servers` matches the baseline's `[]` (server.ts, api-contract.md
         # §0) — the exact same invocation `arch/openapi-v1.baseline.json`'s regeneration
         # recipe documents.
-        # Written to workspace (not /tmp) because oasdiff runs in a Docker container with
-        # isolated /tmp, so it can't see runner-local temp files.
-        run: PUBLIC_API_URL= pnpm --filter @sketchy/api print:openapi openapi-live.json
+        # Written to workspace root (not /tmp, which oasdiff's Docker container can't see,
+        # and not a package-relative path — `pnpm --filter` runs scripts with cwd set to
+        # the package dir, so a bare filename here would land in apps/api/, not where the
+        # oasdiff-action container mounts the workspace).
+        run: PUBLIC_API_URL= pnpm --filter @sketchy/api print:openapi "$GITHUB_WORKSPACE/openapi-live.json"
       - name: Breaking-change gate (oasdiff)
         uses: oasdiff/oasdiff-action/breaking@v0
         with:
