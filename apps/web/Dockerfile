@@ -41,6 +41,11 @@ ENV NODE_ENV=production
 # Next standalone output preserves the monorepo layout: server.js lives under apps/web.
 COPY --from=build /repo/apps/web/.next/standalone ./
 COPY --from=build /repo/apps/web/.next/static ./apps/web/.next/static
+COPY --from=build /repo/apps/web/public ./apps/web/public
+# og-image.tsx reads this at request time (dynamic routes like
+# /r/[code]/opengraph-image aren't prerendered) — not traced into
+# .next/standalone by Next's file tracer, so it needs its own COPY.
+COPY --from=build /repo/apps/web/src/assets ./apps/web/src/assets
 EXPOSE 3000
 ENV PORT=3000 HOSTNAME=0.0.0.0
 CMD ["node", "apps/web/server.js"]

@@ -31,14 +31,38 @@ export const OG_SUCCESS = '#2FA85F';
 const WIDTH = 1200;
 const HEIGHT = 630;
 
+// cwd is apps/web for `next build`/`next dev` (pnpm --filter runs scripts from
+// the package directory, including at prerender time) but the Docker WORKDIR
+// (the monorepo root layout `.next/standalone` preserves) for a dynamic route
+// rendered per-request by the running container — so try both rather than
+// assume one. (import.meta.url doesn't help here: Next's webpack bundling
+// bakes it into the compiled chunk as the build stage's absolute source path,
+// which doesn't exist in the runtime image, and `new URL(..., import.meta.url)`
+// asset-inlining resolves to a request-relative `/_next/static/...` path that
+// plain fetch() can't resolve outside a browser.)
+const FONT_RELATIVE_PATH = 'src/assets/og-fonts/ArchivoBlack-Regular.ttf';
+const FONT_PATH_CANDIDATES = [
+  join(process.cwd(), FONT_RELATIVE_PATH),
+  join(process.cwd(), 'apps/web', FONT_RELATIVE_PATH),
+];
+
 let archivoBlackPromise: Promise<Buffer> | null = null;
+
+async function readArchivoBlack(): Promise<Buffer> {
+  for (const candidate of FONT_PATH_CANDIDATES) {
+    try {
+      return await readFile(candidate);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
+  }
+  throw new Error(`Archivo Black font not found (tried: ${FONT_PATH_CANDIDATES.join(', ')})`);
+}
 
 /** Memoized so a burst of OG requests (crawlers, link unfurl retries) reads the
  * vendored font file from disk once, not once per request. */
 function loadArchivoBlack(): Promise<Buffer> {
-  archivoBlackPromise ??= readFile(
-    join(process.cwd(), 'src/assets/og-fonts/ArchivoBlack-Regular.ttf'),
-  );
+  archivoBlackPromise ??= readArchivoBlack();
   return archivoBlackPromise;
 }
 
