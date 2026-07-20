@@ -4,6 +4,29 @@ Operational procedures for running Sketchy — day-to-day ops, not architecture 
 [arch/system-design.md](../arch/system-design.md) for that). Grows as each phase adds an
 operational concern; this file starts with phase 10's reconciliation job.
 
+## Database bootstrap — migrations + official word-pack seed
+
+A fresh production database needs two one-off runs before real traffic, both via profile-gated
+services in `deploy/compose.prod.yml` (neither is part of the default `up -d` set, so a plain
+deploy can never accidentally re-run either against a live DB):
+
+```sh
+# 1. Schema — run on a fresh box, and again after any commit that adds a migration.
+docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile migrate run --rm migrate
+
+# 2. Official word packs — run once after the first migrate, and again whenever
+#    apps/api/seed/packs/*.json content changes.
+docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile seed run --rm seed
+```
+
+`seed` runs `apps/api/scripts/seed.ts` (`pnpm db:seed`), which upserts one `word_packs` row per
+file in `apps/api/seed/packs/*.json` (by slug) and diffs `word_pairs` (insert-missing,
+leave-existing) — idempotent, so re-running it after editing pack content only inserts what's new.
+Skipping this step doesn't break anything structurally (schema is already correct after `migrate`),
+but the game ships with **zero official packs** until it's run — worth checking on any fresh
+deploy. Same `build`-stage image as `migrate` (not the slim `api` runtime image), since both need
+the source `scripts/`/`seed/` tree the runtime image deliberately doesn't ship.
+
 ## Weekly jobs
 
 Neither job below has actual cron/CI scheduling infra wired up yet — this section documents

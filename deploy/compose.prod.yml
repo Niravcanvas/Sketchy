@@ -9,6 +9,7 @@
 #   cp deploy/.env.prod.example deploy/.env.prod   # fill in real secrets/domains, never commit it
 #   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod build
 #   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile migrate run --rm migrate
+#   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile seed run --rm seed
 #   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod up -d
 #   # voice is opt-in — add `--profile voice` once it's provisioned (RUNBOOK "Voice"):
 #   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile voice up -d
@@ -136,6 +137,27 @@ services:
       postgres:
         condition: service_healthy
     profiles: ['migrate']
+
+  # One-off official word-pack seeder — same shape as `migrate` above (builds the
+  # `build` stage, not `api`'s slim runtime, since it needs the source scripts/seed
+  # tree that the runtime image doesn't ship). Idempotent (apps/api/scripts/seed.ts) —
+  # safe to run again after adding/editing apps/api/seed/packs/*.json. Run once against
+  # a fresh DB (after `migrate`, before first real traffic) and again whenever pack
+  # content changes (deploy/RUNBOOK.md "Database bootstrap"):
+  #   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile seed run --rm seed
+  seed:
+    image: ${API_BUILD_IMAGE:-sketchy-api:build}
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+      target: build
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    command: ['pnpm', '--filter', '@sketchy/api', 'db:seed']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ['seed']
 
   postgres:
     image: postgres:16
