@@ -114,12 +114,14 @@ jobs:
         # unset it here so `servers` matches the baseline's `[]` (server.ts, api-contract.md
         # §0) — the exact same invocation `arch/openapi-v1.baseline.json`'s regeneration
         # recipe documents.
-        run: PUBLIC_API_URL= pnpm --filter @sketchy/api print:openapi /tmp/openapi-live.json
+        # Written to workspace (not /tmp) because oasdiff runs in a Docker container with
+        # isolated /tmp, so it can't see runner-local temp files.
+        run: PUBLIC_API_URL= pnpm --filter @sketchy/api print:openapi openapi-live.json
       - name: Breaking-change gate (oasdiff)
         uses: oasdiff/oasdiff-action/breaking@v0
         with:
           base: arch/openapi-v1.baseline.json
-          revision: /tmp/openapi-live.json
+          revision: openapi-live.json
           fail-on: ERR
 
       # --- Headless reference client: full game, real HTTP + WebSocket, from outside the

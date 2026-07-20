@@ -19,3 +19,6 @@ playwright-report/
 mess/
 
 backup/
+
+# Generated OpenAPI spec (CI-only)
+openapi-live.json
