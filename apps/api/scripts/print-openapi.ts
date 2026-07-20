@@ -64,13 +64,19 @@ function sortKeysDeep(value: unknown): unknown {
  * process hang is exactly the kind of thing that silently wedges a CI job.
  */
 async function main(): Promise<void> {
+  const outPath = process.argv[2];
+  console.error(`[DEBUG] argv: [${process.argv.join(', ')}]`);
+  console.error(`[DEBUG] outPath: ${outPath}`);
+
   const server = await buildServer();
   await server.ready();
   const spec: unknown = server.swagger();
   const json = `${JSON.stringify(sortKeysDeep(spec), null, 2)}\n`;
-  const outPath = process.argv[2];
+
   if (outPath) {
+    console.error(`[DEBUG] writing to ${outPath}`);
     writeFileSync(outPath, json, 'utf8');
+    console.error(`[DEBUG] write complete`);
   } else {
     process.stdout.write(json);
   }
