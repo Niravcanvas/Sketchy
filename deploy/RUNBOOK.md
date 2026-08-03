@@ -27,10 +27,12 @@ deploy can never accidentally re-run either against a live DB):
 
 ```sh
 # 1. Schema — run on a fresh box, and again after any commit that adds a migration.
+docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile migrate build
 docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile migrate run --rm migrate
 
 # 2. Official word packs — run once after the first migrate, and again whenever
 #    apps/api/seed/packs/*.json content changes.
+docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile seed build
 docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile seed run --rm seed
 ```
 

@@ -20,15 +20,16 @@ set -euo pipefail
   echo "Building images with tag ${GIT_SHA}..."
   export WEB_IMAGE="sketchy-web:${GIT_SHA}"
   export API_IMAGE="sketchy-api:${GIT_SHA}"
+  export API_BUILD_IMAGE="sketchy-api-build:${GIT_SHA}"
   
-  docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod build
+  docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile migrate build
   
   # Prune older images (keep last 3 builds)
   echo "Cleaning up old images..."
   docker image prune -f --filter "until=168h" || true
   
-  # Keep only the last 3 tagged images for web and api to allow for rollback
-  for IMAGE_NAME in "sketchy-web" "sketchy-api"; do
+  # Keep only the last 3 tagged images for web, api, and build to allow for rollback
+  for IMAGE_NAME in "sketchy-web" "sketchy-api" "sketchy-api-build"; do
     IMAGES_TO_DELETE=$(docker images --format '{{.CreatedAt}}\t{{.Repository}}:{{.Tag}}' "$IMAGE_NAME" \
       | sort -r \
       | awk 'NR>3 {print $2}')
