@@ -47,6 +47,7 @@ const COPY_BY_ERROR_CODE = {
   account_required: copy.errors.accountRequired,
   suspended: copy.errors.suspended,
   internal: copy.errors.generic500,
+  too_spicy: copy.roles.special.tooSpicy,
 } satisfies Record<ErrorCode, string>;
 
 /**

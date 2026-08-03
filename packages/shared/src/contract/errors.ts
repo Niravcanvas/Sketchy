@@ -46,6 +46,7 @@ export const errorCodeSchema = z.enum([
   'account_required',
   'suspended',
   'internal',
+  'too_spicy',
 ]);
 
 export type ErrorCode = z.infer<typeof errorCodeSchema>;

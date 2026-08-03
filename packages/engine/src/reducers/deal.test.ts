@@ -502,7 +502,7 @@ describe('isValidSpecialRoles — phase 13 total-holder-slot budget (floor(playe
       specialRoles: ['judge', 'jester'],
     });
     const result = applyAction(state, { type: 'start', at: 1, playerId: 'p0', pair: PAIR });
-    expect(result.error).toBe('validation');
+    expect(result.error).toBe('too_spicy');
   });
 
   it('ghost never counts toward the budget — judge+ghost+jester fits once there are enough players', () => {
@@ -529,7 +529,7 @@ describe('isValidSpecialRoles — phase 13 total-holder-slot budget (floor(playe
     });
     expect(
       applyAction(overflows, { type: 'start', at: 1, playerId: 'p0', pair: PAIR }).error,
-    ).toBe('validation');
+    ).toBe('too_spicy');
   });
 
   it('mime never counts toward the budget (room-wide setting, like ghost)', () => {

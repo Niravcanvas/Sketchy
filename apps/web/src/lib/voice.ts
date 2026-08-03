@@ -4,6 +4,8 @@ import {
   MediaDeviceFailure,
   Room,
   RoomEvent,
+  Track,
+  type RemoteTrack,
   type Participant,
 } from 'livekit-client';
 import { ApiError } from '@sketchy/shared/client';
@@ -96,6 +98,17 @@ function wireRoomEvents(r: Room, code: string): void {
         'voiceJoined',
         copy.rooms.voice.joinedToast(participantDisplayName(participant.identity)),
       );
+  });
+
+  r.on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
+    if (track.kind === Track.Kind.Audio) {
+      const element = track.attach();
+      document.body.appendChild(element);
+    }
+  });
+
+  r.on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
+    track.detach().forEach((el) => el.remove());
   });
   r.on(RoomEvent.ParticipantDisconnected, (participant: Participant) => {
     useRoomStore
