@@ -141,7 +141,7 @@ generate the API key/secret yourself; they just have to match on both sides (the
 | Variable | Default | Where to get it | What it does |
 |---|---|---|---|
 | `VOICE_ENABLED` | `true` (dev) / `false` (prod compose) | Set to `true` in `deploy/.env.prod` to turn it on | Kill-switch. Games work with or without voice. |
-| `VOICE_DOMAIN` | *(prod only)* | The subdomain you point at your VPS, e.g. `voice.sketchy.example` | Which host Caddy routes to the LiveKit container. |
+| `VOICE_DOMAIN` | *(prod only)* | The subdomain you point at your VPS, e.g. `voice.sketchy.example` | Which host Cloudflare routes to the LiveKit container. |
 | `LIVEKIT_URL` | `ws://localhost:7880` (dev) | Prod: `wss://<VOICE_DOMAIN>` | WebSocket URL to the LiveKit server. |
 | `NEXT_PUBLIC_LIVEKIT_URL` | `ws://localhost:7880` (dev) | Same value as `LIVEKIT_URL` | Public LiveKit URL exposed to the web. |
 | `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` | `devkey` / `devsecret-...` (dev only) | **You generate these** — any random string pair. Prod: use `openssl rand -hex 32` for the secret. **Never reuse the dev pair.** | Signs/verifies voice tokens between the API and LiveKit. |

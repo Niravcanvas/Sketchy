@@ -20,31 +20,6 @@
 # `docker compose pull` replaces the local build.
 
 services:
-  caddy:
-    image: caddy:2
-    restart: unless-stopped
-    ports:
-      - '8080:80'
-      - '8443:443'
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./certs:/etc/caddy/certs:ro
-      - caddy-data:/data
-      - caddy-config:/config
-    environment:
-      APP_DOMAIN: ${APP_DOMAIN}
-      API_DOMAIN: ${API_DOMAIN}
-      # voice.<domain> for the LiveKit control-plane. Defaults to voice.localhost — an
-      # inert site Caddy serves with an internal (self-signed) cert, no public ACME — so
-      # shipping this Caddyfile never breaks app/api even before voice DNS exists. Set the
-      # real host to activate the voice route (RUNBOOK "Voice" §2).
-      VOICE_DOMAIN: ${VOICE_DOMAIN:-voice.localhost}
-    depends_on:
-      # NOT livekit: voice is optional, and Caddy resolves livekit:7880 lazily per request,
-      # so a down/absent livekit only fails voice requests, never app/api.
-      - web
-      - api
-
   web:
     image: ${WEB_IMAGE:-sketchy-web:local}
     build:
@@ -71,7 +46,7 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: ${REDIS_URL}
       JWT_SECRET: ${JWT_SECRET}
       JWT_SECRET_PREVIOUS: ${JWT_SECRET_PREVIOUS:-}
       CORS_ORIGINS: ${CORS_ORIGINS}
@@ -233,16 +208,16 @@ services:
     # 5349) — those are what every tutorial ships and the first thing already bound on a
     # shared/pre-used VPS or probed by a scanner. If any of these collide on a specific box,
     # change the number here AND in the matching key in deploy/livekit.yaml TOGETHER, keeping
-    # host:container numerically IDENTICAL (no offset) — LiveKit advertises the container-side
+    # keeping host:container numerically IDENTICAL (no offset) — LiveKit advertises the container-side
     # port directly to clients, so a Docker-side remap alone breaks the connection silently.
+    # NOTE: These ports intentionally bypass the Cloudflare Tunnel for direct WebRTC peer routing.
     ports:
       - '31881:31881' # ICE/TCP fallback — backup route #1 (UDP-blocked networks)
       - '32000-32999:32000-32999/udp' # ICE/UDP media, ~1 port/participant (RUNBOOK "Voice" §3)
       - '33478:33478/udp' # embedded TURN over UDP — backup route #2 (hostile NATs)
       - '33349:33349/tcp' # embedded TURN over TLS — active once livekit.yaml's tls_port is enabled
     # 7880 is intentionally NOT published (and NOT renumbered — it's never host-exposed, so
-    # it carries no port-collision risk): Caddy reaches it over the compose network
-    # (reverse_proxy livekit:7880), same pattern as api/web.
+    # it carries no port-collision risk): Cloudflare tunnel reaches it over the compose network.
     healthcheck:
       test: ['CMD-SHELL', 'wget -qO- http://localhost:7880/ || exit 1']
       interval: 10s
@@ -252,5 +227,3 @@ services:
 volumes:
   postgres-data:
   redis-data:
-  caddy-data:
-  caddy-config:

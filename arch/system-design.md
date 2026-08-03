@@ -25,12 +25,9 @@
         players ───────▶│  Cloudflare (DNS proxy, TLS,  │
                         │  CDN cache, WAF, R2 storage)  │
                         └──────────────┬───────────────┘
-                                       │ HTTPS / WSS (Cloudflare proxies WebSockets)
+                                       │ HTTPS / WSS via Cloudflare Tunnels (cloudflared)
                      VPS (4 vCPU / 8GB)│
                         ┌──────────────▼───────────────┐
-                        │  Caddy (reverse proxy,        │
-                        │  Cloudflare origin cert)      │
-                        └───┬───────────────┬──────────┘
                             │               │
               app.domain /* │               │ api.domain /v1/*  + /socket.io/*
                 ┌───────────▼──┐      ┌─────▼──────────┐
@@ -260,9 +257,9 @@ pinned independent of the host OS.
 
 | Service    | Image                  | Notes                                                                                                                                                                                               |
 | ---------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `caddy`    | caddy:2                | Reverse proxy. Terminates TLS with a Cloudflare **origin certificate**; Cloudflare proxy in front runs Full (strict). Routes by hostname to `web` / `api`. WebSocket pass-through for `/socket.io`. |
+
 | `web`      | built in CI            | Next.js standalone output, port 3000 internal.                                                                                                                                                      |
-| `api`      | built in CI            | Fastify + Socket.IO, port 4000 internal. Stateless (state in Redis) — can run 2 replicas later with the already-installed Redis adapter + Caddy sticky-by-cookie.                                   |
+| `api`      | built in CI            | Fastify + Socket.IO, port 4000 internal. Stateless (state in Redis) — can run 2 replicas later with the already-installed Redis adapter + Cloudflare load balancing.                                   |
 | `postgres` | postgres:16            | Bound to the internal Docker network only. Volume-backed. `shared_buffers=1GB`, `max_connections=50` (Drizzle pool ≤10).                                                                            |
 | `redis`    | redis:7                | Internal only. AOF on. `maxmemory 1gb`.                                                                                                                                                             |
 | `livekit`  | livekit/livekit-server | Phase 15 only.                                                                                                                                                                                      |
@@ -297,8 +294,7 @@ zero-drama mid-game because live state is in Redis, and clients auto-reconnect a
 
 Ordered levers, cheapest first — the design above makes each one additive:
 
-1. Run `api` with 2–4 replicas on the same box (Redis adapter already fans out; Caddy adds
-   sticky sessions for Socket.IO's HTTP-fallback polling, or we force `transports:
+1. Run `api` with 2–4 replicas on the same box (Redis adapter already fans out; Cloudflare tunnels can load balance, or we force `transports:
 ['websocket']` and skip stickiness entirely).
 2. Move Postgres+Redis to a second VPS (connection strings are already env-config).
 3. Multiple app VPSes behind Cloudflare load balancing; rooms are naturally shardable by code

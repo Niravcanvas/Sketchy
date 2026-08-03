@@ -1,7 +1,7 @@
 # QA Review & Deployment Plan: Sketchy on VPS
 
 **Project:** Undercover / Sketchy
-**Server:** `pb56` (Proxmox host) → LXC 170 (`docker`) → `/opt/game`
+**Server:** `pb56` (Proxmox host) → LXC 170 (`docker`) → `/opt/sketchy`
 **Target Domains:**
 - **App:** `sketchy.canvasco.in`
 - **API:** `api.canvasco.in`
@@ -24,7 +24,7 @@ This deployment plan introduces a few critical architectural shifts from the pre
 **Decision:** Replaced the previous `appleboy/ssh-action` deployment strategy with an HTTP webhook listener (`almir/webhook`) running on the VPS.
 **Reasoning:**
 - **Security:** The previous pipeline required storing raw SSH keys and server IP addresses in GitHub Secrets, granting GitHub Actions full root SSH access to the Proxmox VPS. The webhook approach only requires a single HMAC secret token. If the token leaks, an attacker can only trigger a git pull/rebuild of the app, rather than gaining arbitrary shell access.
-- **Isolation:** The webhook container runs with specific volume mounts (only `/opt/game` and the docker socket) rather than full host access.
+- **Isolation:** The webhook container runs with specific volume mounts (only `/opt/sketchy` and the docker socket) rather than full host access.
 - **Consistency:** The server already runs a webhook receiver for the `mithilvi` landing page. Unifying the deployment strategy reduces operational overhead.
 
 ### 1.3 Database Migration Strategy
@@ -36,7 +36,7 @@ This deployment plan introduces a few critical architectural shifts from the pre
 
 ## 2. Prerequisites & Environment Variables
 
-Create the production environment file on the VPS at `/opt/game/deploy/.env.prod`.
+Create the production environment file on the VPS at `/opt/sketchy/deploy/.env.prod`.
 
 ```env
 # --- Domains ---
@@ -85,7 +85,7 @@ VOICE_ENABLED=false
 ### Phase 1: Stack Teardown
 Clean up the old stack and volumes.
 ```bash
-cd /opt/game/deploy
+cd /opt/sketchy/deploy
 docker compose -f compose.prod.yml --env-file .env.prod down
 ```
 *(Note: Omit `-v` if you wish to preserve the existing Postgres data. Use `-v` to start completely fresh).*
@@ -131,7 +131,7 @@ Update the existing webhook setup at `/opt/deploy-webhook/`.
   {
     "id": "deploy-sketchy",
     "execute-command": "/scripts/deploy.sh",
-    "command-working-directory": "/opt/game",
+    "command-working-directory": "/opt/sketchy",
     "trigger-rule": {
       "match": {
         "type": "payload-hmac-sha256",
@@ -147,7 +147,7 @@ Update the existing webhook setup at `/opt/deploy-webhook/`.
 ```bash
 #!/bin/bash
 set -euo pipefail
-cd /opt/game
+cd /opt/sketchy
 git fetch origin main
 git reset --hard origin/main
 docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile migrate build
@@ -386,7 +386,7 @@ xlhpm9x31szfdf8ufzav7afny: readdirent /var/lib/docker/overlay2/.../diff/app/apps
 | `c890s3vr235ehbyq73hzuhb2` | running(1) | `/data/coolify/databases/.../docker-compose.yml` |
 | `coolify-proxy` | running(1) | `/data/coolify/proxy/docker-compose.yml` |
 | `craftyy` | running(1) | `/data/compose/3/docker-compose.yml` |
-| `deploy` | **restarting(2), running(3)** | `/opt/game/deploy/compose.prod.yml` |
+| `deploy` | **restarting(2), running(3)** | `/opt/sketchy/deploy/compose.prod.yml` |
 | `jenkins` | running(1) | `/opt/jenkins/docker-compose.yml` |
 | `ngnix` | running(2) | `/opt/ngnix/docker-compose.yml` |
 | `p14cgflvh3055fk6wahry5lg` | running(1) | `/artifacts/zn9ja3g9yj8tz7l8bkw54r44/docker-compose.yaml` |

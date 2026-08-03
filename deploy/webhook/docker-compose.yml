@@ -1,0 +1,20 @@
+services:
+  deploy-webhook:
+    build: .
+    container_name: deploy-webhook
+    restart: unless-stopped
+    # We must use -template so hooks.json can evaluate {{ getenv "WEBHOOK_SECRET" }}
+    command: -verbose -hooks=/etc/webhook/hooks.json -hotreload -template
+    environment:
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+    volumes:
+      - ./hooks.json:/etc/webhook/hooks.json:ro
+      - ./deploy.sh:/scripts/deploy.sh:ro
+      - /opt/sketchy:/opt/sketchy
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - deploy_default
+
+networks:
+  deploy_default:
+    external: true

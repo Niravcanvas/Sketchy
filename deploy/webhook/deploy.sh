@@ -9,7 +9,7 @@ set -euo pipefail
   }
 
   echo "Starting deployment..."
-  cd /opt/game
+  cd /opt/sketchy
   
   git fetch origin main
   git reset --hard origin/main
@@ -43,11 +43,11 @@ set -euo pipefail
   done
   
   echo "Taking Postgres backup before migration..."
-  mkdir -p /opt/game/backups
-  docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod exec -T postgres pg_dump -U sketchy sketchy -F c > /opt/game/backups/db_backup_$(date +%Y%m%d%H%M%S).dump || echo "Warning: Backup failed or postgres not running yet"
+  mkdir -p /opt/sketchy/backups
+  docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod exec -T postgres pg_dump -U sketchy sketchy -F c > /opt/sketchy/backups/db_backup_$(date +%Y%m%d%H%M%S).dump || echo "Warning: Backup failed or postgres not running yet"
   
   echo "Cleaning up old backups..."
-  find /opt/game/backups -name "db_backup_*.dump" -type f -mtime +14 -delete || true
+  find /opt/sketchy/backups -name "db_backup_*.dump" -type f -mtime +14 -delete || true
   
   echo "Running database migrations..."
   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile migrate run --rm migrate

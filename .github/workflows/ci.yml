@@ -164,3 +164,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker build -f apps/${{ matrix.app }}/Dockerfile .
+
+  deploy:
+    needs: [checks, contract-verification, docker]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger VPS Deploy Webhook
+        run: |
+          # The ID "deploy-webhook" should match the "id" defined in your hooks.json
+          # Add the webhook URL as a GitHub Secret named WEBHOOK_URL
+          curl -f -X POST "${{ secrets.WEBHOOK_URL }}"
+
