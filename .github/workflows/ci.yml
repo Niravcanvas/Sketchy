@@ -172,7 +172,7 @@ jobs:
     steps:
       - name: Trigger VPS Deploy Webhook
         run: |
-          # The ID "deploy-webhook" should match the "id" defined in your hooks.json
-          # Add the webhook URL as a GitHub Secret named WEBHOOK_URL
-          curl -f -X POST "${{ secrets.WEBHOOK_URL }}"
+          PAYLOAD="{}"
+          SIGNATURE="sha256=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "${{ secrets.WEBHOOK_SECRET }}" | sed 's/^.* //')"
+          curl -f -X POST -H "Content-Type: application/json" -H "X-Hub-Signature-256: $SIGNATURE" -d "$PAYLOAD" "https://deploy.canvasco.in/hooks/deploy-sketchy"
 
