@@ -203,7 +203,7 @@ async function handleGameStart(
   // step in `drawPairForRoom` means the pool never actually runs dry from it.
   const pair = await drawPairForRoom(code, room.state.settings);
   if (!pair) {
-    ack({ ok: false, error: 'validation' });
+    ack({ ok: false, error: 'empty_pool' });
     return;
   }
 
@@ -517,7 +517,7 @@ async function handleRematch(
   // accepted minor inefficiency the recycle step in `drawPairForRoom` covers.
   const pair = await drawPairForRoom(code, room.state.settings);
   if (!pair) {
-    ack({ ok: false, error: 'validation' });
+    ack({ ok: false, error: 'empty_pool' });
     return;
   }
 
