@@ -48,6 +48,7 @@ const COPY_BY_ERROR_CODE = {
   suspended: copy.errors.suspended,
   internal: copy.errors.generic500,
   too_spicy: copy.roles.special.tooSpicy,
+  empty_pool: copy.errors.emptyPool,
 } satisfies Record<ErrorCode, string>;
 
 /**

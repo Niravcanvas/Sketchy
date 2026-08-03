@@ -410,7 +410,7 @@ export function PnpSetupScreen() {
 
       {emptyPoolBlocked ? (
         <p role="alert" className="text-center font-ui text-sm text-undercover">
-          {copy.errors.validation}
+          {copy.errors.emptyPool}
         </p>
       ) : null}
     </main>

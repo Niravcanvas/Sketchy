@@ -527,6 +527,7 @@ export const copy = {
     profanity: "Let's keep it printable. Try different words.",
     rateLimited: 'Easy there. Give it a few seconds and try again.',
     validation: "That didn't look right — check it and try again.",
+    emptyPool: 'No words left in those packs, or no packs selected. Pick some words!',
     unauthorized: "Your session went stale. Refresh and you'll be back in.",
     /** copy.md §9 `not_found` row — already documented, first mirrored here for the
      * `/packs/import` bad-share-code case (every earlier `not_found` use had a
