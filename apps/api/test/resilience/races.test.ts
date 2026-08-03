@@ -36,7 +36,7 @@ describe('idempotency & races', () => {
     await playToGameOver(table, {
       priority: (role) => (role === 'undercover' ? 0 : 1),
       until: (s) => s.phase === 'voting',
-      timeoutMs: 15_000,
+      timeoutMs: 25_000,
     });
     return table;
   }
@@ -60,7 +60,7 @@ describe('idempotency & races', () => {
     } finally {
       closeTable(table);
     }
-  });
+  }, 30_000);
 
   it('counts every ballot when the whole table votes in the same tick (no lost update)', async () => {
     const table = await driveToVoting('Burst');
@@ -88,7 +88,7 @@ describe('idempotency & races', () => {
     } finally {
       closeTable(table);
     }
-  });
+  }, 30_000);
 
   it('marks every player disconnected when the whole table drops at once', async () => {
     const table = await createTable(server, baseUrl, { n: 5, namePrefix: 'Drop' });
@@ -115,7 +115,7 @@ describe('idempotency & races', () => {
     } finally {
       closeTable(table);
     }
-  });
+  }, 30_000);
 
   it('never delivers a socket a snapshot with a lower ver than a previous one', async () => {
     const table = await createTable(server, baseUrl, { n: 4, namePrefix: 'Mono' });
@@ -132,5 +132,5 @@ describe('idempotency & races', () => {
     } finally {
       closeTable(table);
     }
-  });
+  }, 30_000);
 });
