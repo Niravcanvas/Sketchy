@@ -75,7 +75,7 @@ export const copy = {
     },
     /** Deal-screen chrome shared by all three role cards above. */
     dealChrome: {
-      pressAndHold: 'Press and hold to peek ',
+      pressAndHold: 'Press and hold to peek',
       onRelease: 'Hidden. Very sneaky.',
       confirm: 'Got it',
       /** arch/copy.md §3.1 — online status-strip line during `dealing`. */
@@ -227,7 +227,7 @@ export const copy = {
     /** The paste-into-Discord blurb (copy.md §4) — preserves the source's line breaks
      * verbatim via `\n` and keeps the `**bold**` markers literal (Discord markdown). */
     inviteMessage: (code: string, joinUrl: string) =>
-      `️ Get in here — we're playing **Sketchy**.\nRoom code: **${code}**\n${joinUrl}\n(3 minutes to learn. Nobody trusts anybody. It's great.)`,
+      `Get in here — we're playing **Sketchy**.\nRoom code: **${code}**\n${joinUrl}\n(3 minutes to learn. Nobody trusts anybody. It's great.)`,
     join: {
       title: 'Join a room',
       placeholder: 'ROOM CODE',
@@ -271,7 +271,7 @@ export const copy = {
      * replacement text for the struck-through call hint above. */
     voice: {
       pill: {
-        idle: 'Join voice ️',
+        idle: 'Join voice',
         connecting: 'Connecting…',
         connected: 'Voice on',
         unavailable: 'Voice unavailable',
@@ -329,7 +329,7 @@ export const copy = {
       hide: 'Hide my card',
     },
     afterPeek: {
-      passItOn: 'Pass it on ️',
+      passItOn: 'Pass it on',
       lastPlayer: "Everyone's in. Start round 1",
     },
     clueTracker: {
@@ -385,7 +385,7 @@ export const copy = {
       /** Crumpled note shown for a skipped turn. */
       skipped: 'skipped',
       /** Non-turn-holders' line during `clue`/`tiebreak_clue` (copy.md §6). */
-      thinking: (name: string) => `️ ${name} is thinking…`,
+      thinking: (name: string) => `${name} is thinking…`,
       /** Host's stalled-turn escape hatch (copy.md §6/§11). */
       skipButton: 'Skip their turn',
       skipConfirm: (name: string) => `Skip ${name}? They can still rejoin and play next round.`,
@@ -1155,7 +1155,7 @@ export const copy = {
         {
           question: 'Is there voice chat?',
           answer:
-            "Yes — tap Join voice once you're in a room and you're talking to the table, no extra app. Still prefer a Discord or FaceTime call? That works exactly as well — plenty of tables stick with it.",
+            "Yes — tap Join voiceonce you're in a room and you're talking to the table, no extra app. Still prefer a Discord or FaceTime call? That works exactly as well — plenty of tables stick with it.",
         },
         {
           question: 'Do you sell my data?',
