@@ -213,7 +213,7 @@ services:
     # NOTE: These ports intentionally bypass the Cloudflare Tunnel for direct WebRTC peer routing.
     ports:
       - '31881:31881' # ICE/TCP fallback — backup route #1 (UDP-blocked networks)
-      - '32000-32999:32000-32999/udp' # ICE/UDP media, ~1 port/participant (RUNBOOK "Voice" §3)
+      - '40000-40999:40000-40999/udp' # ICE/UDP media, ~1 port/participant (RUNBOOK "Voice" §3)
       - '33478:33478/udp' # embedded TURN over UDP — backup route #2 (hostile NATs)
       - '33349:33349/tcp' # embedded TURN over TLS — active once livekit.yaml's tls_port is enabled
     # 7880 is intentionally NOT published (and NOT renumbered — it's never host-exposed, so

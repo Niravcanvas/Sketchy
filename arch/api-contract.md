@@ -54,11 +54,11 @@
 | Method & path           | Auth | Request → Response                                                                                                     |
 | ----------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------- |
 | `POST /auth/guest`      | —    | `{ displayName }` → `{ token, player: Player }` — creates guest identity ([system-design.md §6](system-design.md))     |
-| `GET /players/me`       | ✓    | → `{ player: Player }` (also silently re-issues token past half-expiry via `X-Refreshed-Token` header)                 |
-| `PATCH /players/me`     | ✓    | `{ displayName?, avatar? }` → `{ player: Player }`                                                                     |
-| `GET /players/me/stats` | ✓    | → `{ totalPoints, gamesPlayed, gamesWon, byRole: { civilian: RoleStats, undercover: RoleStats, mrwhite: RoleStats } }` |
-| `GET /players/me/games` | ✓    | paginated → `{ items: GameHistoryItem[] }`                                                                             |
-| `GET /players/me/games/:gameId` | ✓ | → `{ gameId, rounds: GameRound[] }` — redacted round-by-round summary for one finished game (phase 10 addition, below) |
+| `GET /players/me`       |     | → `{ player: Player }` (also silently re-issues token past half-expiry via `X-Refreshed-Token` header)                 |
+| `PATCH /players/me`     |     | `{ displayName?, avatar? }` → `{ player: Player }`                                                                     |
+| `GET /players/me/stats` |     | → `{ totalPoints, gamesPlayed, gamesWon, byRole: { civilian: RoleStats, undercover: RoleStats, mrwhite: RoleStats } }` |
+| `GET /players/me/games` |     | paginated → `{ items: GameHistoryItem[] }`                                                                             |
+| `GET /players/me/games/:gameId` |  | → `{ gameId, rounds: GameRound[] }` — redacted round-by-round summary for one finished game (phase 10 addition, below) |
 
 ```ts
 Player = { id, displayName, avatar: AvatarConfig, isGuest, createdAt };
@@ -107,19 +107,19 @@ number for both ballots) reports only the deciding (last) vote's tally, not a me
 
 | Method & path                     | Auth  | Request → Response                                                                                                                       |
 | --------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /packs`                      | ✓     | `?official=&mine=&language=` → `{ items: Pack[] }`                                                                                       |
-| `GET /packs/:id`                  | ✓     | → `{ pack: Pack }`                                                                                                                       |
-| `GET /packs/:id/pairs`            | ✓     | paginated → `{ items: Pair[] }` — owner sees all; non-owners only for official/shared packs, and **never during a live game they're in** |
-| `POST /packs`                     | ✓     | `{ name, description? }` → `{ pack: Pack }`                                                                                              |
+| `GET /packs`                      |      | `?official=&mine=&language=` → `{ items: Pack[] }`                                                                                       |
+| `GET /packs/:id`                  |      | → `{ pack: Pack }`                                                                                                                       |
+| `GET /packs/:id/pairs`            |      | paginated → `{ items: Pair[] }` — owner sees all; non-owners only for official/shared packs, and **never during a live game they're in** |
+| `POST /packs`                     |      | `{ name, description? }` → `{ pack: Pack }`                                                                                              |
 | `PATCH /packs/:id`                | owner | `{ name?, description?, visibility?, coverUrl? }` → `{ pack: Pack }` — `visibility:'unlisted'` mints `shareCode`; `visibility:'public'` is self-service and immediate: it sets `reviewStatus:'approved'`, so the pack is instantly public (no review gate enforced yet) |
 | `DELETE /packs/:id`               | owner | → `{ ok: true }`                                                                                                                         |
 | `POST /packs/:id/pairs`           | owner | `{ pairs: [{ wordA, wordB, difficulty }] }` (bulk, ≤100) → `{ items: Pair[] }`                                                           |
 | `PATCH /packs/:id/pairs/:pairId`  | owner | `{ wordA?, wordB?, difficulty? }` → `{ pair: Pair }`                                                                                     |
 | `DELETE /packs/:id/pairs/:pairId` | owner | → `{ ok: true }`                                                                                                                         |
-| `POST /packs/import`              | ✓     | `{ shareCode }` → `{ pack: Pack }` (grants read-access, does not copy)                                                                   |
-| `GET /packs/public`               | ✓     | `?q=&cursor=&limit=` → `{ items: Pack[], nextCursor }` — browse the public catalog: `public`+`approved` packs owned by OTHERS, EXCLUDING official/owned/already-imported (only addable rows); optional `q` name search (ILIKE); per-player browse rate limit |
-| `POST /packs/:id/import`          | ✓     | → `{ pack: Pack }` — add a PUBLIC pack to the caller's set by id (mints a `pack_access` grant, idempotent); refuses (404) a pack that isn't `public`+`approved`, so private/unlisted/pending packs never leak |
-| `POST /uploads/presign`           | ✓     | `{ kind: 'packCover' \| 'avatar', contentType, sizeBytes }` → `{ uploadUrl, publicUrl }` (R2 presigned PUT, phase 11)                    |
+| `POST /packs/import`              |      | `{ shareCode }` → `{ pack: Pack }` (grants read-access, does not copy)                                                                   |
+| `GET /packs/public`               |      | `?q=&cursor=&limit=` → `{ items: Pack[], nextCursor }` — browse the public catalog: `public`+`approved` packs owned by OTHERS, EXCLUDING official/owned/already-imported (only addable rows); optional `q` name search (ILIKE); per-player browse rate limit |
+| `POST /packs/:id/import`          |      | → `{ pack: Pack }` — add a PUBLIC pack to the caller's set by id (mints a `pack_access` grant, idempotent); refuses (404) a pack that isn't `public`+`approved`, so private/unlisted/pending packs never leak |
+| `POST /uploads/presign`           |      | `{ kind: 'packCover' \| 'avatar', contentType, sizeBytes }` → `{ uploadUrl, publicUrl }` (R2 presigned PUT, phase 11)                    |
 
 ```ts
 Pack = {
@@ -179,9 +179,9 @@ importing your own public pack is a no-op (ownership already grants access).
 
 | Method & path                  | Auth      | Request → Response                                                                                                                                   |
 | ------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST /rooms`                  | ✓         | `{ settings?: Partial<GameSettings> }` → `{ code, joinUrl }` — allocates code, seeds Redis room in `lobby` phase with caller as host                 |
-| `GET /rooms/:code`             | ✓         | → `{ code, phase, playerCount, maxPlayers, canJoin: boolean, canRejoin: boolean, hostName }` — pre-join check used by the join screen & invite links |
-| `GET /rooms/:code/voice-token` | ✓, member | → `{ token, url }` — signed LiveKit access token (phase 15, live)                                                                                    |
+| `POST /rooms`                  |          | `{ settings?: Partial<GameSettings> }` → `{ code, joinUrl }` — allocates code, seeds Redis room in `lobby` phase with caller as host                 |
+| `GET /rooms/:code`             |          | → `{ code, phase, playerCount, maxPlayers, canJoin: boolean, canRejoin: boolean, hostName }` — pre-join check used by the join screen & invite links |
+| `GET /rooms/:code/voice-token` | , member | → `{ token, url }` — signed LiveKit access token (phase 15, live)                                                                                    |
 
 **`GET /rooms/:code/voice-token`** (phase 15, `apps/api/src/voice/livekit-token.ts`): caller
 must be a currently SEATED room member (any phase, alive or eliminated — Ghosts can
@@ -204,10 +204,10 @@ setting.
 
 | Method & path               | Auth | Request → Response                                                                                           |
 | --------------------------- | ---- | ------------------------------------------------------------------------------------------------------------ |
-| `GET /lobbies`              | ✓    | paginated → public rooms in lobby phase `{ items: { code, hostName, playerCount, maxPlayers, language }[] }` |
-| `POST /matchmaking/queue`   | ✓ (account) | `{ language }` → `{ status: 'queued' }` — resolution pushed via socket `mm:matched { code }`; a guest gets 403 `account_required` |
-| `DELETE /matchmaking/queue` | ✓    | → `{ ok: true }` (existence-hiding)                                                                          |
-| `POST /reports`             | ✓    | `{ reportedPlayerId, roomCode?, reason, detail? }` → `{ ok: true }` — server captures the room's recent chat/clue context |
+| `GET /lobbies`              |     | paginated → public rooms in lobby phase `{ items: { code, hostName, playerCount, maxPlayers, language }[] }` |
+| `POST /matchmaking/queue`   |  (account) | `{ language }` → `{ status: 'queued' }` — resolution pushed via socket `mm:matched { code }`; a guest gets 403 `account_required` |
+| `DELETE /matchmaking/queue` |     | → `{ ok: true }` (existence-hiding)                                                                          |
+| `POST /reports`             |     | `{ reportedPlayerId, roomCode?, reason, detail? }` → `{ ok: true }` — server captures the room's recent chat/clue context |
 
 Public-room creation is `POST /rooms` with the additive optional `{ visibility: 'private' | 'public' }` field (default `'private'`); `'public'` requires a linked account (guests → 403 `account_required`) and forces the stranger-safe defaults (timers on, spice roles off). A public room is one whose `GameState.mode` is `'online_public'`; it is listed by `GET /lobbies` while in its lobby phase and delisted on `game:start`.
 
@@ -217,10 +217,10 @@ Email magic-link linking that upgrades the caller's guest row in place (system-d
 
 | Method & path            | Auth | Request → Response                                                                                                    |
 | ------------------------ | ---- | -------------------------------------------------------------------------------------------------------------------- |
-| `POST /auth/link/request`| ✓    | `{ email }` → `{ ok: true }` — ALWAYS this response (enumeration-safe), whether or not a link was actually minted     |
+| `POST /auth/link/request`|     | `{ email }` → `{ ok: true }` — ALWAYS this response (enumeration-safe), whether or not a link was actually minted     |
 | `POST /auth/link/verify` | —    | `{ token }` → `{ token, player }` — consumes the single-use link token (the token IS the proof, so no session auth); the returned JWT now carries `guest:false` |
-| `POST /auth/google`      | ✓    | `{ idToken }` → `{ token, player }` — additional identity-link method: the server verifies the Google ID token against `GOOGLE_CLIENT_ID` (as audience) and requires a Google-`email_verified` address, then upgrades the CALLER's guest row via the same `players.email` link + response as `/auth/link/verify` (errors if the email is already in use). Flag-gated and dormant: returns `404 not_found` when `GOOGLE_SIGNIN_ENABLED` is off or no client ID is provisioned. Rate-limited 3/min per player. |
-| `DELETE /account`        | ✓    | → `{ ok: true }` — self-service account deletion by SOFT-ANONYMIZE: one UPDATE scrubs `email`→NULL / `displayName`→`'Deleted player'` / `avatar`→the neutral default doodle and flips `isGuest`→true, KEEPING the row + id so the moderation audit trail (`reports`/`player_blocks` on both sides) survives. A guest → 400 `validation` (nothing linked to delete). The still-valid JWT is NOT revoked server-side (no session-revocation infra); the client drops its token. Rate-limited 3/min per player. |
+| `POST /auth/google`      |     | `{ idToken }` → `{ token, player }` — additional identity-link method: the server verifies the Google ID token against `GOOGLE_CLIENT_ID` (as audience) and requires a Google-`email_verified` address, then upgrades the CALLER's guest row via the same `players.email` link + response as `/auth/link/verify` (errors if the email is already in use). Flag-gated and dormant: returns `404 not_found` when `GOOGLE_SIGNIN_ENABLED` is off or no client ID is provisioned. Rate-limited 3/min per player. |
+| `DELETE /account`        |     | → `{ ok: true }` — self-service account deletion by SOFT-ANONYMIZE: one UPDATE scrubs `email`→NULL / `displayName`→`'Deleted player'` / `avatar`→the neutral default doodle and flips `isGuest`→true, KEEPING the row + id so the moderation audit trail (`reports`/`player_blocks` on both sides) survives. A guest → 400 `validation` (nothing linked to delete). The still-valid JWT is NOT revoked server-side (no session-revocation infra); the client drops its token. Rate-limited 3/min per player. |
 
 ### Blocks (phase 16 — IMPLEMENTED, additive)
 
@@ -228,9 +228,9 @@ Additive `/v1` endpoints beyond the originally-enumerated matchmaking rows (see 
 
 | Method & path                  | Auth | Request → Response                                       |
 | ------------------------------ | ---- | -------------------------------------------------------- |
-| `GET /blocks`                  | ✓    | → `{ items: { blockedPlayerId, createdAt }[] }`          |
-| `POST /blocks`                 | ✓    | `{ blockedPlayerId }` → `{ ok: true }` (idempotent)      |
-| `DELETE /blocks/:blockedPlayerId` | ✓ | → `{ ok: true }` (existence-hiding)                     |
+| `GET /blocks`                  |     | → `{ items: { blockedPlayerId, createdAt }[] }`          |
+| `POST /blocks`                 |     | `{ blockedPlayerId }` → `{ ok: true }` (idempotent)      |
+| `DELETE /blocks/:blockedPlayerId` |  | → `{ ok: true }` (existence-hiding)                     |
 
 Suspension (admin action, below): a moderation-suspended player is rejected at EVERY auth boundary — REST (`requireAuth` → 403 `suspended`) and the socket handshake — with a sanitized message. `account_required` / `suspended` are additive `ErrorCode` values (copy.md §9).
 
@@ -254,8 +254,8 @@ app's push registration is additive to `/v1`, never a forced `/v2`. Nothing belo
 
 | Method & path        | Auth | Request → Response                                                                                                                                        |
 | -------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST /v1/devices`   | ✓    | `{ platform: 'ios' \| 'android', pushToken: string }` → `{ ok: true }` — registers/upserts one push token for the caller's playerId; re-registering the same `(platform, pushToken)` pair is idempotent. |
-| `DELETE /v1/devices` | ✓    | `{ pushToken: string }` → `{ ok: true }` — unregisters one token (logout / notifications-off), existence-hiding (`ok: true` either way).                                 |
+| `POST /v1/devices`   |     | `{ platform: 'ios' \| 'android', pushToken: string }` → `{ ok: true }` — registers/upserts one push token for the caller's playerId; re-registering the same `(platform, pushToken)` pair is idempotent. |
+| `DELETE /v1/devices` |     | `{ pushToken: string }` → `{ ok: true }` — unregisters one token (logout / notifications-off), existence-hiding (`ok: true` either way).                                 |
 
 Shape notes for whenever this is actually built:
 

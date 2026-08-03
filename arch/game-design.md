@@ -48,7 +48,7 @@ Discord — copy §4).
 
 ### 3.2 Player strip
 
-All players as avatar cards in seat order: name, connection dot (✓ when live / faded +
+All players as avatar cards in seat order: name, connection dot ( when live / faded +
 "reconnecting…" spinner when in grace, copy §8), elimination state (row flips to a
 `bg-undercover` "OUT" row with an ink role tag — design-party-pop.md §11), current-turn
 highlight (row flips to a tilted `bg-civilian` card — §11), "has voted" checkmark during
@@ -115,7 +115,7 @@ Seat 0 is guaranteed non-Mr.-White by default (`mrWhiteFirstClueBan`, research 0
 ### 6.2 Clue phase
 
 Turn spotlight walks the player strip in seat order (alive players only). Turn-holder gets
-the input ("one word or short phrase", 40-char cap); everyone else sees "✏️ {name} is
+the input ("one word or short phrase", 40-char cap); everyone else sees "️ {name} is
 writing…". Submit → the clue card pops onto the board (Pop-in, design-party-pop.md §7). Server rejects
 repeats/secret word with inline errors (copy §9: `clue_repeated`, `clue_is_secret_word`).
 Timer per turn (default 60 s; untimed preset for call-based groups); expiry or host

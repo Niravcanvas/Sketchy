@@ -68,7 +68,7 @@ describe('copy', () => {
   });
 
   it('contains the §3.1 deal-screen chrome and pass-and-play peek strings verbatim', () => {
-    expect(copy.roles.dealChrome.pressAndHold).toBe('Press and hold to peek 👇');
+    expect(copy.roles.dealChrome.pressAndHold).toBe('Press and hold to peek ');
     expect(copy.roles.dealChrome.onRelease).toBe('Hidden. Very sneaky.');
     expect(copy.roles.dealChrome.confirm).toBe('Got it');
     expect(copy.roles.dealChrome.waitingForPeek(3)).toBe('Waiting for 3 players to peek…');
@@ -134,7 +134,7 @@ describe('copy', () => {
       "We've suggested a mix for 6 players. Meddle at your own risk.",
     );
 
-    expect(copy.pnp.afterPeek.passItOn).toBe('Pass it on ➡️');
+    expect(copy.pnp.afterPeek.passItOn).toBe('Pass it on ️');
     expect(copy.pnp.afterPeek.lastPlayer).toBe("Everyone's in. Start round 1");
 
     expect(copy.pnp.clueTracker.line('Sam')).toBe(
@@ -170,7 +170,7 @@ describe('copy', () => {
   });
 
   it('contains the §6 online clue-phase additions verbatim (phase 6)', () => {
-    expect(copy.phases.clue.thinking('Priya')).toBe('✏️ Priya is thinking…');
+    expect(copy.phases.clue.thinking('Priya')).toBe('️ Priya is thinking…');
     expect(copy.phases.clue.skipButton).toBe('Skip their turn');
     expect(copy.phases.clue.skipConfirm('Priya')).toBe(
       'Skip Priya? They can still rejoin and play next round.',
@@ -283,7 +283,7 @@ describe('copy', () => {
     expect(copy.rooms.actions.copied).toBe('Copied.');
 
     expect(copy.rooms.inviteMessage('ABCJK', 'https://sketchy.example/r/ABCJK')).toBe(
-      "🕵️ Get in here — we're playing **Sketchy**.\n" +
+      "️ Get in here — we're playing **Sketchy**.\n" +
         'Room code: **ABCJK**\n' +
         'https://sketchy.example/r/ABCJK\n' +
         "(3 minutes to learn. Nobody trusts anybody. It's great.)",
@@ -300,7 +300,7 @@ describe('copy', () => {
   });
 
   it('contains the §4 voice pill strings verbatim (phase 15)', () => {
-    expect(copy.rooms.voice.pill.idle).toBe('Join voice 🎙️');
+    expect(copy.rooms.voice.pill.idle).toBe('Join voice ️');
     expect(copy.rooms.voice.pill.connecting).toBe('Connecting…');
     expect(copy.rooms.voice.pill.connected).toBe('Voice on');
     expect(copy.rooms.voice.pill.unavailable).toBe('Voice unavailable');

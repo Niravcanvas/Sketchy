@@ -44,7 +44,7 @@ function currentSpeaker(state: RedactedGameState): RedactedGamePlayer | null {
 
 /**
  * The clue phase (game-design.md §6.2, reused for `tiebreak_clue`'s sudden-death round):
- * the turn-holder gets the input, everyone else sees "✏️ {name} is thinking…", and the host
+ * the turn-holder gets the input, everyone else sees "️ {name} is thinking…", and the host
  * can skip a stalled turn. `ClueBoard` (components/game/clue-board.tsx) renders the append-
  * only log underneath, unmodified — it's already shared+presentational.
  */

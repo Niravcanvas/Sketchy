@@ -35,8 +35,8 @@ rtc:
   # "low hundreds of concurrent players" launch target (system-design.md §0) with headroom.
   # Resize per RUNBOOK "Voice" §3 if real numbers say otherwise — keep it in sync with the
   # published range in compose.prod.yml.
-  port_range_start: 32000
-  port_range_end: 32999
+  port_range_start: 40000
+  port_range_end: 40999
   # The advertised public address comes from the command line (--node-ip=${VPS_PUBLIC_IP}),
   # so external-IP auto-detection is off — same intent as the dev config's 127.0.0.1.
   use_external_ip: false
@@ -45,7 +45,7 @@ rtc:
 # outbound 443 (RUNBOOK "Voice" §4). UDP TURN (33478) is active now and needs no cert.
 turn:
   enabled: true
-  domain: voice.sketchy.example # ← replace with the real voice subdomain before deploy.
+  domain: voice.sketchy.canvasco.in # ← replace with the real voice subdomain before deploy.
   udp_port: 33478
   # ---------------------------------------------------------------------------------------
   # TURN-over-TLS on 33349 is the ONE remaining step, and it's the reach-maximizing one:

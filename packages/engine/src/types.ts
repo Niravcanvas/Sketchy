@@ -44,7 +44,7 @@ export interface Clue {
    * `true` when `playerId` was THIS round's Mime (`GameState.mimeId`) at the moment this
    * clue was recorded — never `true` for a `SKIPPED_CLUE` entry (a skipped turn isn't a
    * gesture). PUBLIC, same as the rest of `Clue` (data-model.md §4 `clues` row) — the clue
-   * board renders "🎭 (mimed)" off this flag. Set once, at recording time, so it stays
+   * board renders " (mimed)" off this flag. Set once, at recording time, so it stays
    * historically accurate even after `mimeId` moves on to a different player next round.
    */
   mimed: boolean;

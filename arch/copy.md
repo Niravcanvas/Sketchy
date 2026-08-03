@@ -55,7 +55,7 @@
 - Goal line: "Bluff your way through. If they catch you, guess their word to steal the win."
 - Reminder chip: "Listen hard. Every clue is a hint."
 
-Deal-screen chrome: "Press and hold to peek 👇" / on release: "Hidden. Very sneaky." /
+Deal-screen chrome: "Press and hold to peek " / on release: "Hidden. Very sneaky." /
 confirm button: `Got it` / status strip: "Waiting for {n} players to peek…"
 
 ### §3.2 Special roles (settings toggles; each has toggle-label + description + deal-card line)
@@ -80,11 +80,11 @@ two once your table knows the basics."
   friends the code, or just send the link."
 - Copy actions: `Copy code` / `Copy link` / `Copy invite message`
 - **Invite message** (the paste-into-Discord blurb):
-  > 🕵️ Get in here — we're playing **Sketchy**.
+  > ️ Get in here — we're playing **Sketchy**.
   > Room code: **{CODE}**
   > {joinUrl}
   > (3 minutes to learn. Nobody trusts anybody. It's great.)
-- Lobby call hint (remote rooms) — **REPLACED at phase 15** by the `Join voice 🎙️` pill
+- Lobby call hint (remote rooms) — **REPLACED at phase 15** by the `Join voice ️` pill
   (below); the line below is kept struck through for history, not shown in-product anymore:
   ~~"Playing from your couches? Hop on a voice call — Sketchy is best played arguing out
   loud."~~
@@ -112,12 +112,12 @@ two once your table knows the basics."
   button `Send`.
 - **Voice (phase 15, new)** — the status-strip pill (lobby AND in-game, game-design.md §10),
   its states, and everything that hangs off it:
-  - Pill label per state: idle `Join voice 🎙️` (also the exact replacement text for the
+  - Pill label per state: idle `Join voice ️` (also the exact replacement text for the
     struck-through call hint above) / connecting `Connecting…` / connected `Voice on` /
     unavailable `Voice unavailable` / mic blocked `Mic blocked`.
   - Mic-permission denial (graceful — the game is never blocked on this): "Mic's blocked. The
     game doesn't need it — fix it in your browser's site settings if you change your mind, or
-    just keep playing." Retry button reuses `Join voice 🎙️` verbatim.
+    just keep playing." Retry button reuses `Join voice ️` verbatim.
   - Voice-server-down degradation (pill tooltip/subtext when `unavailable`): "Voice is down for
     a moment. Nothing about the game depends on it — we'll quietly reconnect when it's back."
   - iOS/background-tab honesty tooltip (help icon next to the pill once connected): "Voice
@@ -138,7 +138,7 @@ two once your table knows the basics."
   at your own risk."
 - Pass interstitial: **"Pass the phone to {name}"** — button: `That's me` — small print:
   "Everyone else, look away. Yes, you."
-- After peek: `Pass it on ➡️` — last player: `Everyone's in. Start round 1`
+- After peek: `Pass it on ️` — last player: `Everyone's in. Start round 1`
 - Clue tracker: "**{name}**, describe your word out loud. One word or a short phrase."
   → `Next player`
 - Vote handoff: "Pass to {name} to vote — no peeking at the last ballot."
@@ -164,7 +164,7 @@ two once your table knows the basics."
   `Tiebreaker` · `The Reveal`
 - Clue phase, your turn: "**Your turn.** One word or a short phrase about your secret word."
   — input placeholder `Your clue…` — button `Pin it to the board`
-- Clue phase, not your turn: "✏️ {name} is thinking…"
+- Clue phase, not your turn: "️ {name} is thinking…"
 - Skipped-turn note (crumpled): `skipped`
 - Host skip button: `Skip their turn` — confirm: "Skip {name}? They can still rejoin and
   play next round."

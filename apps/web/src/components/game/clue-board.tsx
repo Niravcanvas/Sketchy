@@ -113,7 +113,7 @@ export function ClueBoard({ clues, players }: ClueBoardProps) {
                       {isSkipped ? copy.phases.clue.skipped : clue.text}
                     </p>
                     {/* Mime special role: the clue-board note for whichever round
-                        this was gestured, not spoken (copy.md's "🎭 (mimed)"). Never shown for
+                        this was gestured, not spoken (copy.md's " (mimed)"). Never shown for
                         a skipped turn (Clue.mimed is never true for one — reducers/clue.ts). */}
                     {clue.mimed ? (
                       <p
