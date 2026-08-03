@@ -11,6 +11,7 @@ import {
   findPlayer,
   isHost,
   isValidSettingsForLobby,
+  isValidSpecialRoles,
   normalizeText,
   ok,
   reject,
@@ -86,6 +87,7 @@ export function applyUpdateSettings(state: GameState, action: UpdateSettingsActi
   if (!isHost(state, action.playerId)) return reject(state, 'not_host');
 
   const merged = { ...state.settings, ...action.patch };
+  if (!isValidSpecialRoles(merged.specialRoles, merged.maxPlayers)) return reject(state, 'too_spicy');
   if (!isValidSettingsForLobby(merged, state.players.length)) return reject(state, 'validation');
 
   return ok({ ...state, settings: merged });

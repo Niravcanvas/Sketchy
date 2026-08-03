@@ -329,6 +329,11 @@ export function PnpSetupScreen() {
             {copy.pnp.steppers.roleMathError}
           </p>
         ) : null}
+        {error === 'too_spicy' ? (
+          <p role="alert" className="font-ui text-sm text-undercover">
+            {copy.roles.special.tooSpicy}
+          </p>
+        ) : null}
       </PopCard>
 
       <PopCard className="flex flex-col gap-5">

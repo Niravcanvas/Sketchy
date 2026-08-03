@@ -17,6 +17,9 @@ function startErrorCopy(code: ErrorCode): string {
   if (code === 'validation') {
     return copy.pnp.steppers.roleMathError;
   }
+  if (code === 'too_spicy') {
+    return copy.roles.special.tooSpicy;
+  }
   return copyForError(code);
 }
 

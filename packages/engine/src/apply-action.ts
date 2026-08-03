@@ -26,7 +26,8 @@ export type EngineErrorCode =
   | 'wrong_phase'
   | 'already_voted'
   | 'clue_repeated'
-  | 'clue_is_secret_word';
+  | 'clue_is_secret_word'
+  | 'too_spicy';
 
 /** Return shape of `applyAction` — data-model.md §3. */
 export interface ApplyResult {

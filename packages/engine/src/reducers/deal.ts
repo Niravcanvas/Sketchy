@@ -217,7 +217,7 @@ export function applyStart(state: GameState, action: StartAction): ApplyResult {
     return reject(state, 'validation');
   }
   if (!isValidSpecialRoles(state.settings.specialRoles, state.players.length)) {
-    return reject(state, 'validation');
+    return reject(state, 'too_spicy');
   }
   const next = beginDealing(state, action.pair, action.at);
   return ok(next, timerEffects(next.phaseEndsAt));
