@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { copy } from '@/copy';
 
@@ -92,9 +93,25 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t-3 border-paper-2/20">
-        <p className="mx-auto w-full max-w-5xl px-6 py-4 font-ui text-xs text-paper-2/60">
-          {copy.marketing.footer.copyright(year)}
-        </p>
+        <div className="mx-auto flex w-full max-w-5xl flex-col-reverse items-center justify-between gap-4 px-6 py-6 sm:flex-row sm:items-end">
+          <p className="font-ui text-xs text-paper-2/60">
+            {copy.marketing.footer.copyright(year)}
+          </p>
+          <a
+            href="https://canvasco.in/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-opacity hover:opacity-80"
+          >
+            <Image
+              src="/canvasco.svg"
+              alt="Crafted by Canvasco"
+              width={160}
+              height={45}
+              className="h-auto max-w-full"
+            />
+          </a>
+        </div>
       </div>
     </footer>
   );
