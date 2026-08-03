@@ -53,9 +53,9 @@ set -euo pipefail
   docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile migrate run --rm migrate
   
   echo "Bringing up production stack..."
-  if ! docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile voice up -d --wait; then
+  if ! docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod up -d --wait; then
     echo "Error: Containers failed to become healthy. Fetching recent logs..."
-    docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod --profile voice logs --tail=100
+    docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod logs --tail=100
     exit 1
   fi
   
