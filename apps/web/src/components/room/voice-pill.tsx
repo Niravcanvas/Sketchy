@@ -11,7 +11,7 @@ import { useRoomStore } from '@/stores/room-store';
 import { useVoiceStore } from '@/stores/voice-store';
 
 /**
- * "Join voice 🎙️" pill (game-design.md §10) — replaces the old
+ * "Join voice ️" pill (game-design.md §10) — replaces the old
  * lobby call hint (copy.md §4) and doubles as the in-game status-strip voice control.
  * Rendered in BOTH `cheat-sheet-card.tsx` (lobby) and `game/status-strip.tsx` (in-game); it
  * self-derives the room code from `room-store` rather than taking it as a prop, same pattern

@@ -11,7 +11,7 @@ describe('hashStringToUint32', () => {
   });
 
   it('always returns a uint32', () => {
-    const h = hashStringToUint32('anything at all, including emoji 🎲 and spaces');
+    const h = hashStringToUint32('anything at all, including emoji  and spaces');
     expect(Number.isInteger(h)).toBe(true);
     expect(h).toBeGreaterThanOrEqual(0);
     expect(h).toBeLessThanOrEqual(0xffffffff);

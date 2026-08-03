@@ -4,7 +4,7 @@ Copy-paste this guide next to your `.env` file while filling it in.
 
 ---
 
-## 🔐 CRITICAL — Must set in production
+##  CRITICAL — Must set in production
 
 | Variable | Where to get it | What it does |
 |---|---|---|
@@ -13,7 +13,7 @@ Copy-paste this guide next to your `.env` file while filling it in.
 
 ---
 
-## 📦 Data stores (localhost dev defaults provided)
+##  Data stores (localhost dev defaults provided)
 
 | Variable | Default | Where to get it | What it does |
 |---|---|---|---|
@@ -22,7 +22,7 @@ Copy-paste this guide next to your `.env` file while filling it in.
 
 ---
 
-## 🔑 Auth
+##  Auth
 
 | Variable | Where to get it | What it does | Required? |
 |---|---|---|---|
@@ -30,7 +30,7 @@ Copy-paste this guide next to your `.env` file while filling it in.
 
 ---
 
-## 🌐 Networking / CORS (localhost dev defaults provided)
+##  Networking / CORS (localhost dev defaults provided)
 
 | Variable | Default | Where to get it | What it does |
 |---|---|---|---|
@@ -42,7 +42,7 @@ Copy-paste this guide next to your `.env` file while filling it in.
 
 ---
 
-## ☁️ Cloudflare R2 (file uploads, backups)
+## ️ Cloudflare R2 (file uploads, backups)
 
 **Skip this for MVP launch.** If you want user avatar uploads later:
 
@@ -62,7 +62,7 @@ actually upload an avatar or pack cover in production.
 
 ---
 
-## 📊 Observability / admin
+##  Observability / admin
 
 | Variable | Default | Where to get it | What it does |
 |---|---|---|---|
@@ -71,7 +71,7 @@ actually upload an avatar or pack cover in production.
 
 ---
 
-## 📧 Email (magic-link account linking)
+##  Email (magic-link account linking)
 
 | Variable | Default | Where to get it | What it does |
 |---|---|---|---|
@@ -92,7 +92,7 @@ actually upload an avatar or pack cover in production.
 
 ---
 
-## 🔓 Google Sign-In (optional, dormant by default)
+##  Google Sign-In (optional, dormant by default)
 
 **Skip for MVP.** To add "Sign in with Google" later:
 
@@ -111,7 +111,7 @@ actually upload an avatar or pack cover in production.
 
 ---
 
-## ⚙️ Matchmaking tuning (optional — code defaults if empty)
+## ️ Matchmaking tuning (optional — code defaults if empty)
 
 | Variable | Default | Where to get it | What it does |
 |---|---|---|---|
@@ -121,7 +121,7 @@ actually upload an avatar or pack cover in production.
 
 ---
 
-## 💪 Resilience tuning (optional — spec defaults if empty)
+##  Resilience tuning (optional — spec defaults if empty)
 
 | Variable | Default | Where to get it | What it does |
 |---|---|---|---|
@@ -131,7 +131,7 @@ actually upload an avatar or pack cover in production.
 
 ---
 
-## 🎤 Voice (self-hosted LiveKit SFU — localhost dev defaults provided)
+##  Voice (self-hosted LiveKit SFU — localhost dev defaults provided)
 
 **Not a hosted service** — LiveKit runs as your own container (`deploy/compose.prod.yml`'s
 `livekit` service, behind the `voice` compose profile), so there's no dashboard to visit. You
@@ -160,11 +160,11 @@ generate the API key/secret yourself; they just have to match on both sides (the
 
 ---
 
-## 🚀 Minimal launch checklist
+##  Minimal launch checklist
 
-✅ **For local dev:** Just set `JWT_SECRET` and `ADMIN_TOKEN` to any random strings. Everything else has defaults.
+ **For local dev:** Just set `JWT_SECRET` and `ADMIN_TOKEN` to any random strings. Everything else has defaults.
 
-✅ **For Phase 9 production deploy:**
+ **For Phase 9 production deploy:**
 - [ ] `JWT_SECRET` = secure random string
 - [ ] `ADMIN_TOKEN` = secure random string
 - [ ] `DATABASE_URL` = your prod Postgres URL
@@ -177,7 +177,7 @@ generate the API key/secret yourself; they just have to match on both sides (the
 - [ ] `GOOGLE_CLIENT_ID` + `NEXT_PUBLIC_GOOGLE_CLIENT_ID` + `GOOGLE_SIGNIN_ENABLED=true` = only if Google Sign-In is ready (optional)
 - [ ] Voice (optional) — `VOICE_ENABLED=true`, `VOICE_DOMAIN`, `LIVEKIT_URL` + `NEXT_PUBLIC_LIVEKIT_URL` (`wss://<VOICE_DOMAIN>`), a real `LIVEKIT_API_KEY`/`LIVEKIT_API_SECRET` (never the dev pair), `VPS_PUBLIC_IP` — then start with `--profile voice`
 
-✅ **Optional (can skip for MVP):**
+ **Optional (can skip for MVP):**
 - R2 (file uploads)
 - Sentry (error tracking)
 - Google Sign-In (account linking method)
