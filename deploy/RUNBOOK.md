@@ -4,6 +4,21 @@ Operational procedures for running Sketchy — day-to-day ops, not architecture 
 [arch/system-design.md](../arch/system-design.md) for that). Grows as each phase adds an
 operational concern; this file starts with phase 10's reconciliation job.
 
+## Rollback Procedure
+
+If a deploy introduces a critical bug or regression, you can rollback to a previous known-good state by specifying older image tags. `deploy.sh` intentionally keeps the most recent 3 SHA-tagged images (e.g. `sketchy-web:<sha>`).
+
+You can rollback by overriding `WEB_IMAGE` and `API_IMAGE` and re-running docker compose:
+
+```sh
+WEB_IMAGE=sketchy-web:<previous-sha> API_IMAGE=sketchy-api:<previous-sha> \
+  docker compose -f deploy/compose.prod.yml --env-file deploy/.env.prod up -d --wait
+```
+
+> [!WARNING]
+> Rolling back the application images does **NOT** undo database migrations.
+> If the broken deploy included a destructive database migration (e.g. dropping a column), the old code may crash expecting the old schema. In that case, you must manually restore the database from the `pg_dump` backup taken just before the migration.
+
 ## Database bootstrap — migrations + official word-pack seed
 
 A fresh production database needs two one-off runs before real traffic, both via profile-gated
@@ -87,9 +102,7 @@ once a later phase implements it. Not part of phase 10's scope.
 ## Voice (LiveKit) — WIRED, provisioning + secrets required
 
 **Status: baked into the stack, off until provisioned.** The voice SFU is now part of the
-production stack: the `livekit` service in `deploy/compose.prod.yml` (behind the `voice`
-compose profile), its config in `deploy/livekit.yaml`, its reverse-proxy route in
-`deploy/Caddyfile`, and its env vars in `deploy/.env.prod.example`. What's left is pure ops —
+production stack: the `livekit` service in `deploy/compose.prod.yml` (behind the `voice` compose profile), its config in `deploy/livekit.yaml`, and its env vars in `deploy/.env.prod.example`. What's left is pure ops —
 DNS, firewall, one cert, real secrets — plus starting the stack with `--profile voice`.
 Nothing here runs on a plain `up -d`, and the app stays inert until `VOICE_ENABLED=true`, so
 this is safe to merge and deploy before voice is switched on. The app layer (token minting,
@@ -124,22 +137,9 @@ routed through different edges. Concretely:
   certificate (below), not a Cloudflare origin cert (browsers would reject that cert directly,
   with no Cloudflare edge to have already validated it).
 
-### 2. TLS / Caddy route — already in the Caddyfile
+### 2. TLS / Cloudflare tunnel route
 
-The `voice.` site block is in `deploy/Caddyfile` already:
-
-```caddyfile
-{$VOICE_DOMAIN:voice.localhost} {
-	reverse_proxy livekit:7880
-}
-```
-
-No `tls` line — Caddy provisions a public ACME cert (HTTP-01/TLS-ALPN-01) because the host is
-DNS-only, so its own challenge traffic reaches it directly (no Cloudflare DNS-01 plugin needed).
-`VOICE_DOMAIN` flows from `deploy/.env.prod` through the caddy service's `environment:` block;
-until it's set it defaults to `voice.localhost`, which Caddy serves with its internal self-signed
-CA (no public ACME, no errors), so the block is inert and never touches app/api before voice is
-provisioned. Only the WSS/HTTPS control-plane rides through Caddy — the UDP RTC + TURN media is
+Route the voice domain to `livekit:7880` in your Cloudflare tunnel configuration. Only the WSS/HTTPS control-plane rides through the tunnel — the UDP RTC + TURN media is
 its own DTLS-SRTP transport straight to the VPS and is deliberately NOT proxied.
 
 ### 3. Firewall — what actually has to be open, and why
@@ -154,8 +154,8 @@ port directly to the client, so a Docker-side-only remap breaks silently).
 
 | Port(s)                | Proto   | Purpose                                                                 | Notes |
 | ----------------------- | ------- | ------------------------------------------------------------------------ | ----- |
-| 443                     | TCP     | `voice.sketchy.example` WSS/HTTPS control-plane, via Caddy (above)       | Same port every other hostname uses — nothing new to open. |
-| 31881                    | TCP     | ICE/TCP fallback (`rtc.tcp_port`)                     | For clients whose network blocks UDP outright (hotel/corporate wifi) — bypasses Caddy, dials the VPS directly. |
+| 443                     | TCP     | `voice.sketchy.example` WSS/HTTPS control-plane, via Cloudflare tunnel (above)       | Same port every other hostname uses — nothing new to open. |
+| 31881                    | TCP     | ICE/TCP fallback (`rtc.tcp_port`)                     | For clients whose network blocks UDP outright (hotel/corporate wifi) — bypasses the tunnel, dials the VPS directly. |
 | 32000–32999 (shipped) | UDP     | ICE/UDP media (`rtc.port_range_start/end`)             | **Matches `deploy/livekit.yaml` + the range published in compose — keep the two in sync if you resize.** ~1 UDP port per concurrent participant at peak: the phase-15 LOCAL load test saw a 20-port range fail at 64 participants (exactly half connected) while 100–200 handled 64 cleanly. 1000 ports covers the launch target (system-design.md §0: "low hundreds of concurrent connected players") with wide headroom, without the startup/iptables cost of publishing LiveKit's full 10 000-port default under Docker. |
 | 33478 / 33349             | UDP/TCP | Embedded TURN (below) — only if enabled                                 | |
 
@@ -170,14 +170,14 @@ will NOT work here). TCP 33349 is already published by compose. To finish it:
 - Get a public cert + key for `VOICE_DOMAIN` and place them at `deploy/certs/voice.pem` +
   `deploy/certs/voice-key.pem` (mounted read-only into the livekit container at
   `/etc/livekit/certs`). Ways to source it: a dedicated ACME client (certbot) for that host; or
-  export the cert Caddy already provisions for the voice host from its data volume; or set
+  export the cert from Cloudflare or another ACME source, or set
   LiveKit's `external_tls` and terminate TURN-TLS at a fronting proxy.
 - Uncomment the `tls_port` / `cert_file` / `key_file` lines in `deploy/livekit.yaml`, then restart
   the livekit service.
 
-Making TURN-TLS share port 443 with Caddy (so it's indistinguishable from ordinary HTTPS to the
-most restrictive firewalls — the trick every major WebRTC provider uses) needs Caddy ALPN/SNI
-routing; pin that once the cert and Caddy version are settled. UDP TURN plus the 33349 listener
+Making TURN-TLS share port 443 (so it's indistinguishable from ordinary HTTPS to the
+most restrictive firewalls — the trick every major WebRTC provider uses) needs ALPN/SNI
+routing; pin that once the cert is settled. UDP TURN plus the 33349 listener
 already cover the large majority of locked-down networks.
 
 ### 5. The `livekit` service — already in compose.prod.yml (behind the `voice` profile)
@@ -187,7 +187,7 @@ so it only starts when you pass `--profile voice`. It mounts `deploy/livekit.yam
 `deploy/certs` (read-only, for the TURN-TLS cert), takes its real key/secret via `LIVEKIT_KEYS`
 (from `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET`, so no secret is committed), publishes 31881/TCP +
 the 32000–32999/UDP media range + 33478/UDP (TURN) + 33349/TCP (TURN-TLS) — all deliberately
-renumbered off LiveKit's stock defaults, see §3 — and deliberately does NOT publish 7880 (Caddy
+renumbered off LiveKit's stock defaults, see §3 — and deliberately does NOT publish 7880 (Cloudflare tunnel
 reaches it over the compose network). The one line that matters most:
 
 `--node-ip=${VPS_PUBLIC_IP}` (rather than the dev config's `127.0.0.1`) is what makes LiveKit
