@@ -43,9 +43,9 @@ jobs:
       JWT_SECRET: dev-only-change-me
       ADMIN_TOKEN: dev-only-change-me
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -97,9 +97,9 @@ jobs:
       PORT: 4100
       PUBLIC_API_URL: http://localhost:4100
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -162,7 +162,7 @@ jobs:
       matrix:
         app: [web, api]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: docker build -f apps/${{ matrix.app }}/Dockerfile .
 
   deploy:
