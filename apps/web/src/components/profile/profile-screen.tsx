@@ -11,6 +11,7 @@ import { HistoryList } from '@/components/profile/history-list';
 import { IdentityCard } from '@/components/profile/identity-card';
 import { PointsSparkline } from '@/components/profile/points-sparkline';
 import { RoleWinRateBars } from '@/components/profile/role-winrate-bars';
+import { NavBackButton } from '@/components/nav-back-button';
 import { copy } from '@/copy';
 import { apiClient } from '@/lib/api-client';
 import { useSessionStore } from '@/stores/session-store';
@@ -68,6 +69,7 @@ export function ProfileScreen() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center gap-6 bg-paper px-6 py-12">
+      <NavBackButton href="/" />
       <h1 className="font-display text-3xl uppercase tracking-wide text-ink">
         {copy.profile.screenTitle}
       </h1>

@@ -13,6 +13,7 @@ import { PopButton } from '@/components/pop/pop-button';
 import { PopCard } from '@/components/pop/pop-card';
 import { PopDialog } from '@/components/pop/pop-dialog';
 import { PopInput } from '@/components/pop/pop-input';
+import { NavBackButton } from '@/components/nav-back-button';
 import { copy } from '@/copy';
 import { apiClient } from '@/lib/api-client';
 import { copyForError } from '@/lib/error-copy';
@@ -115,6 +116,7 @@ function PackDetail({ id }: { id: string }) {
   if (!pack) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+        <NavBackButton href="/packs" />
         <PopCard>
           <p role="alert" className="font-ui text-base text-ink">
             {copy.errors.notFound}
@@ -143,6 +145,7 @@ function PackDetail({ id }: { id: string }) {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 bg-paper px-6 py-12">
+      <NavBackButton href="/packs" />
       <div className="h-48 w-full overflow-hidden rounded-2xl">
         <PackCover coverUrl={pack.coverUrl} seed={pack.id} />
       </div>

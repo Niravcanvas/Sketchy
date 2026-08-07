@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NamePromptCard } from '@/components/name-prompt-card';
+import { NavBackButton } from '@/components/nav-back-button';
 import { PublicPacksBrowser } from '@/components/packs/public-packs-browser';
 import { useSessionStore } from '@/stores/session-store';
 
@@ -39,6 +40,7 @@ export default function BrowsePublicPacksPage() {
   return (
     <QueryClientProvider client={queryClient}>
       <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-8 bg-paper px-6 py-12">
+        <NavBackButton href="/packs" />
         <PublicPacksBrowser />
       </main>
     </QueryClientProvider>

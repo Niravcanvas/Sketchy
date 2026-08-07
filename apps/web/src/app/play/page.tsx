@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PnpGame } from '@/components/pnp/pnp-game';
+import { NavBackButton } from '@/components/nav-back-button';
 
 /**
  * Pass-and-play route (game-design.md §2): a client component running the
@@ -25,6 +26,7 @@ export default function PlayPage() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <NavBackButton href="/" />
       <PnpGame />
     </QueryClientProvider>
   );
