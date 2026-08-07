@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { BreadcrumbJsonLd } from '@/components/marketing/breadcrumb-json-ld';
-import { DraftBanner } from '@/components/marketing/draft-banner';
 import { MarketingPageShell } from '@/components/marketing/marketing-page-shell';
 import { copy } from '@/copy';
 
@@ -8,11 +7,6 @@ export const metadata: Metadata = {
   title: copy.marketing.privacy.meta.title,
   description: copy.marketing.privacy.meta.description,
   alternates: { canonical: '/privacy' },
-  // DRAFT content (see the in-page banner) — `noindex` until the product owner reviews it,
-  // so un-reviewed legal text can't be crawled/cached publicly before launch. Flip to
-  // indexable (and re-add to app/sitemap.ts) in the same review pass that clears the draft
-  // banner.
-  robots: { index: false, follow: false },
   openGraph: {
     title: copy.marketing.privacy.meta.title,
     description: copy.marketing.privacy.meta.description,
@@ -27,17 +21,14 @@ export const metadata: Metadata = {
 };
 
 /**
- * `/privacy` — DRAFT (arch/copy.md §16.5). Rewritten in the pre-deploy audit pass to cover
+ * `/privacy` — Rewritten in the pre-deploy audit pass to cover
  * everything shipped so far (accounts/email linking, public matchmaking, voice,
- * moderation/reports, R2 uploads, IP-based rate limiting, Sentry) — still explicitly NOT
- * final legal text pending product-owner sign-off, hence the in-page `DraftBanner` and
- * `noindex` staying in place.
+ * moderation/reports, R2 uploads, IP-based rate limiting, Sentry).
  */
 export default function PrivacyPage() {
   return (
     <MarketingPageShell>
       <BreadcrumbJsonLd pageName={copy.marketing.privacy.meta.title} path="/privacy" />
-      <DraftBanner text={copy.marketing.privacy.draftBanner} />
       <h1 className="font-display text-3xl uppercase tracking-wide text-ink">
         {copy.marketing.privacy.title}
       </h1>
