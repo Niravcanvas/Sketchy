@@ -2,7 +2,6 @@ import { getEnv } from './env.js';
 import { closeObservability } from './observability.js';
 import { buildServer } from './server.js';
 import { assertProductionSecretsConfigured } from './startup-guards.js';
-import { getDb } from './db/client.js';
 
 async function main(): Promise<void> {
   const env = getEnv();
