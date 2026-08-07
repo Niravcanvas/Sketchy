@@ -2,10 +2,28 @@ import { getEnv } from './env.js';
 import { closeObservability } from './observability.js';
 import { buildServer } from './server.js';
 import { assertProductionSecretsConfigured } from './startup-guards.js';
+import { getDb } from './db/client.js';
+import { resolveSeedDir, loadPackFiles, seedPack } from '../scripts/seed.js';
 
 async function main(): Promise<void> {
   const env = getEnv();
   assertProductionSecretsConfigured(env);
+
+  // --- TEMPORARY ONE-OFF SEEDING (Remove after deploy) ---
+  try {
+    const seedDir = resolveSeedDir();
+    const packFiles = await loadPackFiles(seedDir);
+    const db = getDb();
+    for (const { data } of packFiles) {
+      const summary = await seedPack(db, data);
+      console.log(`[Auto-Seed] ${summary}`);
+    }
+    console.log(`[Auto-Seed] Seeded ${packFiles.length} pack(s) from ${seedDir}`);
+  } catch (error) {
+    console.error('[Auto-Seed] Failed to run startup seed:', error);
+  }
+  // -------------------------------------------------------
+
   const fastify = await buildServer();
 
   await fastify.listen({ port: env.port, host: '0.0.0.0' });
