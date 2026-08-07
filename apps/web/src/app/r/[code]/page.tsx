@@ -12,6 +12,7 @@ import { JoinGate } from '@/components/room/join-gate';
 import { LobbyScreen } from '@/components/room/lobby-screen';
 import { PopCard } from '@/components/pop/pop-card';
 import { MuteToggle } from '@/components/sound/mute-toggle';
+import { NavBackButton } from '@/components/nav-back-button';
 import { copy } from '@/copy';
 import { apiClient } from '@/lib/api-client';
 import { copyForError } from '@/lib/error-copy';
@@ -53,6 +54,7 @@ function joinErrorCopy(error: ErrorCode, maxPlayers: number | undefined): string
 function RoomMessageScreen({ message }: { message: string }) {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+      <NavBackButton href="/" />
       <PopCard className="flex flex-col items-center gap-3">
         <p role="alert" className="font-ui text-base text-ink">
           {message}
@@ -62,11 +64,9 @@ function RoomMessageScreen({ message }: { message: string }) {
   );
 }
 
-/** Placeholder skeleton (game-design.md §8 "Loading states") shown until the first
- * snapshot arrives — purely decorative, no text worth narrating for a sub-second wait. */
 function ConnectingSkeleton() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-4 px-6">
+    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-4 px-6 bg-paper">
       <div
         aria-hidden="true"
         className="h-40 w-full max-w-sm animate-pulse rounded-xl border border-graphite/30 bg-paper-2"
@@ -78,6 +78,7 @@ function ConnectingSkeleton() {
 function SupersededBanner() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
+      <NavBackButton href="/" />
       <PopCard className="flex flex-col items-center gap-3">
         <p role="alert" aria-live="assertive" className="font-ui text-base text-ink">
           {copy.presence.sessionSuperseded}

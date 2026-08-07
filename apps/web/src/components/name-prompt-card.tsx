@@ -78,7 +78,11 @@ export function NamePromptCard() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    if (!isValidLength || isSubmitting) {
+    if (isSubmitting) {
+      return;
+    }
+    if (!isValidLength) {
+      setError(copy.home.namePrompt.validation);
       return;
     }
     setIsSubmitting(true);
@@ -121,7 +125,7 @@ export function NamePromptCard() {
           variant="primary"
           size="md"
           className="self-start"
-          disabled={!isValidLength || isSubmitting}
+          disabled={isSubmitting}
         >
           {copy.home.namePrompt.submit}
           <IconArrowRight className="h-4 w-4" />

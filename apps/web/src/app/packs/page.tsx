@@ -8,6 +8,7 @@ import { CreatePackDialog } from '@/components/packs/create-pack-dialog';
 import { ImportPackForm } from '@/components/packs/import-pack-form';
 import { PackCard } from '@/components/packs/pack-card';
 import { IconChip } from '@/components/pop/icon-chip';
+import { NavBackButton } from '@/components/nav-back-button';
 import { NamePromptCard } from '@/components/name-prompt-card';
 import { copy } from '@/copy';
 import { apiClient } from '@/lib/api-client';
@@ -38,6 +39,7 @@ function PackManager() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-8 bg-paper px-6 py-12">
+      <NavBackButton href="/" />
       <header className="flex flex-col items-center gap-3 text-center">
         <IconChip tone="accent" className="h-14 w-14">
           <IconBook className="h-6 w-6" />
@@ -70,14 +72,11 @@ function PackManager() {
       {tab === 'mine' ? <ImportPackForm onImported={refetchMine} /> : null}
 
       {items.length === 0 && !activeQuery.isLoading ? (
-        // copy.md §15: "Mine" is one merged owned+imported list with no sub-split, so
-        // there's no distinct "imports are empty" state to show `emptyImports` for — the
-        // official tab (server-seeded, arch/copy.md §13's 8 packs) isn't expected to ever
-        // hit this branch, but if it somehow does, showing nothing beats showing the wrong
-        // tab's copy.
         tab === 'mine' ? (
           <p className="font-ui text-sm text-graphite">{copy.packs.manager.emptyMine}</p>
-        ) : null
+        ) : (
+          <p className="font-ui text-sm text-graphite">{copy.packs.browse.empty}</p>
+        )
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           {items.map((pack) => (

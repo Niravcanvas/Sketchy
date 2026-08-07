@@ -156,7 +156,7 @@ export function PublicPacksBrowser() {
             const added = addedIds.has(pack.id);
             return (
               <div key={pack.id} className="flex flex-col gap-2" data-testid="browse-pack">
-                <PackCard pack={pack} />
+                <PackCard pack={pack} showOwnerAttribution />
                 <PopButton
                   type="button"
                   variant={added ? 'secondary' : 'primary'}
