@@ -15,9 +15,9 @@ describe('copy', () => {
   });
 
   it('contains the §2 name-prompt strings verbatim', () => {
-    expect(copy.home.namePrompt.question).toBe('What should we call you?');
-    expect(copy.home.namePrompt.placeholder).toBe('Your name…');
-    expect(copy.home.namePrompt.helper).toBe('No account needed. You can change this anytime.');
+    expect(copy.home.namePrompt.question).toBe("What's your name?");
+    expect(copy.home.namePrompt.placeholder).toBe('Name');
+    expect(copy.home.namePrompt.helper).toBe('This is how you will appear to other players.');
     expect(copy.home.namePrompt.submit).toBe("Let's go");
   });
 

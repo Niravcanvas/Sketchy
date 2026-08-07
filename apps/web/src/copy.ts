@@ -36,10 +36,11 @@ export const copy = {
       myScrapbook: 'My scrapbook',
     },
     namePrompt: {
-      question: 'What should we call you?',
-      placeholder: 'Your name…',
-      helper: 'No account needed. You can change this anytime.',
+      question: "What's your name?",
+      placeholder: 'Name',
+      helper: 'This is how you will appear to other players.',
       submit: "Let's go",
+      validation: 'Name must be 2 to 20 characters.',
     },
     footer: 'Best with 6–12 players and at least one dramatic friend.',
   },
@@ -1156,7 +1157,7 @@ export const copy = {
         {
           question: 'Is there voice chat?',
           answer:
-            "Yes — tap Join voiceonce you're in a room and you're talking to the table, no extra app. Still prefer a Discord or FaceTime call? That works exactly as well — plenty of tables stick with it.",
+            "Yes — tap Join voice once you're in a room and you're talking to the table, no extra app. Still prefer a Discord or FaceTime call? That works exactly as well — plenty of tables stick with it.",
         },
         {
           question: 'Do you sell my data?',
@@ -1250,7 +1251,7 @@ export const copy = {
         },
         {
           heading: 'Your control over your data',
-          body: "You can delete your account any time from your profile: we anonymize your record on the spot — your display name, linked email, and doodle are scrubbed — and keep only the moderation history (reports and blocks) required to keep the game safe for everyone. It takes effect immediately and can't be undone. Clearing your browser's local storage ends your local session too, but only deleting your account removes the linked-account data on our side. Questions, or want a hand? Email [CONTACT_EMAIL].",
+          body: "You can delete your account any time from your profile: we anonymize your record on the spot — your display name, linked email, and doodle are scrubbed — and keep only the moderation history (reports and blocks) required to keep the game safe for everyone. It takes effect immediately and can't be undone. Clearing your browser's local storage ends your local session too, but only deleting your account removes the linked-account data on our side. Questions, or want a hand? Email contact@canvasco.in.",
         },
         {
           heading: 'Children',
@@ -1262,7 +1263,7 @@ export const copy = {
         },
         {
           heading: 'Contact',
-          body: 'Questions about this policy: [CONTACT_EMAIL]',
+          body: 'Questions about this policy: contact@canvasco.in',
         },
       ],
       og: {
@@ -1328,7 +1329,7 @@ export const copy = {
         },
         {
           heading: 'Contact',
-          body: 'Questions about these terms: [CONTACT_EMAIL]',
+          body: 'Questions about these terms: contact@canvasco.in',
         },
       ],
       og: {

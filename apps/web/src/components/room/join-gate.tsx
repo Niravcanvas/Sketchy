@@ -74,7 +74,11 @@ export function JoinGate({ onReady, code }: JoinGateProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    if (!nameValid || isSubmitting) {
+    if (isSubmitting) {
+      return;
+    }
+    if (!nameValid) {
+      setError(copy.home.namePrompt.validation);
       return;
     }
     setIsSubmitting(true);
@@ -134,7 +138,7 @@ export function JoinGate({ onReady, code }: JoinGateProps) {
             variant="primary"
             size="lg"
             className="self-center"
-            disabled={!nameValid || isSubmitting}
+            disabled={isSubmitting}
           >
             {copy.rooms.join.submit}
             <IconArrowRight className="h-4 w-4" />

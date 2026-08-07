@@ -102,7 +102,7 @@ describe('NamePromptCard', () => {
     });
   });
 
-  it('disables submit until the name is at least 2 characters', () => {
+  it('shows validation error when submitting with a name less than 2 characters', async () => {
     render(<NamePromptCard />);
 
     const submit = screen.getByRole('button', {
@@ -110,10 +110,16 @@ describe('NamePromptCard', () => {
     }) as HTMLButtonElement;
     const input = screen.getByPlaceholderText(copy.home.namePrompt.placeholder);
 
-    expect(submit.disabled).toBe(true);
     fireEvent.change(input, { target: { value: 'S' } });
-    expect(submit.disabled).toBe(true);
+    fireEvent.click(submit);
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent).toBe(copy.home.namePrompt.validation);
+    });
+
     fireEvent.change(input, { target: { value: 'Sam' } });
-    expect(submit.disabled).toBe(false);
+    fireEvent.click(submit);
+    await waitFor(() => {
+      expect(guestAuth).toHaveBeenCalledWith({ displayName: 'Sam' });
+    });
   });
 });
