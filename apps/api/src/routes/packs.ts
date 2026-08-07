@@ -494,13 +494,9 @@ export const packRoutes: FastifyPluginAsyncZod = async (fastify) => {
           ...(visibility !== undefined ? { visibility } : {}),
           ...(coverUrl !== undefined ? { coverUrl } : {}),
           ...(visibility === 'unlisted' ? { shareCode } : {}),
-          // Going public is self-service and takes effect immediately: the pack is marked
-          // `approved`, so it's instantly visible/usable to everyone (the access gate in
-          // pack-access.ts admits public packs only when `approved`). The `review_status`
-          // machinery (this column, the admin `approve_pack` action, the "packs awaiting
-          // review" queue) is deliberately in place but dormant — turning on a moderation
-          // gate later is a one-line change here: set `'pending'` instead of `'approved'`.
-          ...(visibility === 'public' ? { reviewStatus: 'approved' as const } : {}),
+          // The `review_status` moderation gate is now active: public packs require admin
+          // approval via the moderation queue before they are visible/usable to everyone.
+          ...(visibility === 'public' ? { reviewStatus: 'pending' as const } : {}),
           updatedAt: new Date(),
         })
         .where(eq(wordPacks.id, pack.id))

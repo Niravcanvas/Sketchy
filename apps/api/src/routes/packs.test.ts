@@ -1158,12 +1158,9 @@ describe('pack live-game leak guard', () => {
 });
 
 /**
- * Self-service public packs (no review gate enforced at launch): patching a pack to
- * `visibility:'public'` sets `reviewStatus:'approved'` in the same step, so it's immediately
- * visible/usable to everyone. The `approve_pack` moderation action + `review_status` column
- * are dormant infrastructure for a future gate, still verified here. Mirrors the
- * visibility-matrix setup above (HTTP for create/patch, `createGuest` for identities,
- * `performModerationAction` for the admin side).
+ * Moderated public packs: patching a pack to `visibility:'public'` sets `reviewStatus:'pending'`.
+ * The pack remains invisible to everyone except the owner until an admin approves it via the
+ * moderation queue (the `approve_pack` action).
  */
 describe('self-service public packs', () => {
   let server: FastifyInstance;
@@ -1201,7 +1198,7 @@ describe('self-service public packs', () => {
     });
   }
 
-  it('flips a pack to public → approved immediately, so a non-owner can see and use it at once', async () => {
+  it('flips a pack to public → pending, requiring admin approval before a non-owner can see it', async () => {
     const owner = await createGuest(server, { displayName: 'PackOwner' });
     const stranger = await createGuest(server, { displayName: 'Stranger' });
     const id = await createPack(owner.token, 'Going Public');
@@ -1213,21 +1210,33 @@ describe('self-service public packs', () => {
       remoteAddress: uniqueIp(),
     });
 
-    // Owner makes it public → the response reports public + approved (immediately live).
+    // Owner makes it public → the response reports public + pending (not yet live).
     const patched = await patchVisibility(owner.token, id, 'public');
     expect(patched.statusCode).toBe(200);
     expect(patched.json().pack.visibility).toBe('public');
-    expect(patched.json().pack.reviewStatus).toBe('approved');
+    expect(patched.json().pack.reviewStatus).toBe('pending');
 
-    // A non-owner can immediately reach it by direct id and read its pairs — no approval step.
+    // A non-owner CANNOT immediately reach it by direct id (hidden by the review gate).
     const strangerById = await server.inject({
       method: 'GET',
       url: `/v1/packs/${id}`,
       headers: { authorization: `Bearer ${stranger.token}` },
       remoteAddress: uniqueIp(),
     });
-    expect(strangerById.statusCode).toBe(200);
-    expect(strangerById.json().pack.reviewStatus).toBe('approved');
+    expect(strangerById.statusCode).toBe(404);
+
+    // Admin approves it
+    await performModerationAction({ action: 'approve_pack', packId: id });
+
+    // NOW the non-owner can reach it and read its pairs.
+    const strangerByIdApproved = await server.inject({
+      method: 'GET',
+      url: `/v1/packs/${id}`,
+      headers: { authorization: `Bearer ${stranger.token}` },
+      remoteAddress: uniqueIp(),
+    });
+    expect(strangerByIdApproved.statusCode).toBe(200);
+    expect(strangerByIdApproved.json().pack.reviewStatus).toBe('approved');
     const strangerPairs = await server.inject({
       method: 'GET',
       url: `/v1/packs/${id}/pairs`,
@@ -1248,12 +1257,15 @@ describe('self-service public packs', () => {
     expect((ownerList.json().items as { id: string }[]).some((p) => p.id === id)).toBe(true);
   });
 
-  it('going private again hides a public pack from non-owners; going public re-exposes it immediately', async () => {
+  it('going private again hides a public pack from non-owners; going public again requires re-approval', async () => {
     const owner = await createGuest(server, { displayName: 'Waffler' });
     const stranger = await createGuest(server, { displayName: 'Onlooker' });
     const id = await createPack(owner.token, 'On Again Off Again');
 
     await patchVisibility(owner.token, id, 'public');
+    // Admin approves the first time
+    await performModerationAction({ action: 'approve_pack', packId: id });
+
     // Back to private → the non-owner loses access.
     await patchVisibility(owner.token, id, 'private');
     const whilePrivate = await server.inject({
@@ -1264,22 +1276,19 @@ describe('self-service public packs', () => {
     });
     expect(whilePrivate.statusCode).toBe(404);
 
-    // Public again → approved again, immediately visible (no gate to clear).
+    // Public again → pending again, requiring re-approval.
     const rePublic = await patchVisibility(owner.token, id, 'public');
-    expect(rePublic.json().pack.reviewStatus).toBe('approved');
+    expect(rePublic.json().pack.reviewStatus).toBe('pending');
     const afterPublic = await server.inject({
       method: 'GET',
       url: `/v1/packs/${id}`,
       headers: { authorization: `Bearer ${stranger.token}` },
       remoteAddress: uniqueIp(),
     });
-    expect(afterPublic.statusCode).toBe(200);
+    expect(afterPublic.statusCode).toBe(404);
   });
 
-  // Dormant infrastructure for a future review gate: the `approve_pack` action still flips a
-  // pack's review_status to 'approved' and logs the audit row, even though nothing sets a
-  // pack to 'pending' via the API today. Exercised here against a directly-inserted pending
-  // public pack (simulating what a switched-on gate would produce).
+  // The `approve_pack` action flips a pending pack to 'approved' and logs the audit row.
   it('approve_pack flips a pending pack to approved and logs the audit row', async () => {
     const owner = await createGuest(server, { displayName: 'FutureGate' });
     const [pack] = await getDb()
