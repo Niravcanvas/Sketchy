@@ -59,7 +59,6 @@ export async function buildPresignedUpload(
     Bucket: env.r2Bucket,
     Key: key,
     ContentType: body.contentType,
-    ContentLength: body.sizeBytes,
   });
 
   const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: UPLOAD_URL_EXPIRY_SECONDS });
