@@ -50,14 +50,13 @@ describe('SharePackPanel make-public control', () => {
     await waitFor(() => expect(onShared).toHaveBeenCalledWith(updated));
   });
 
-  it('shows the live public state (not the make-public button) once a pack is public', () => {
-    render(
+  it('renders nothing once a pack is public (delegated to page header)', () => {
+    const { container } = render(
       <SharePackPanel
         pack={{ ...privatePack, visibility: 'public', reviewStatus: 'approved' }}
         onShared={vi.fn()}
       />,
     );
-    expect(screen.getByText(copy.packs.review.publicBadge)).toBeTruthy();
-    expect(screen.queryByText(copy.packs.sharing.makePublicButton)).toBeNull();
+    expect(container.firstChild).toBeNull();
   });
 });
