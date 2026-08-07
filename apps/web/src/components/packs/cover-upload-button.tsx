@@ -13,7 +13,7 @@ function uploadErrorCopy(error: unknown): string {
   if (error instanceof ApiError) {
     return copyForError(error.code);
   }
-  return copy.errors.networkOffline;
+  return copy.errors.generic500;
 }
 
 export interface CoverUploadButtonProps {

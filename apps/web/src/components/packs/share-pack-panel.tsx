@@ -73,14 +73,7 @@ export function SharePackPanel({ pack, onShared }: SharePackPanelProps) {
   // Already public: self-service + immediate, so there's nothing left to confirm — just
   // state that the pack is live in the public catalog.
   if (pack.visibility === 'public') {
-    return (
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="font-ui text-xs font-bold uppercase tracking-[0.14em] text-graphite">
-          {copy.packs.review.publicBadge}
-        </span>
-        <span className="font-ui text-sm text-graphite">{copy.packs.review.publicHelper}</span>
-      </div>
-    );
+    return null;
   }
 
   const makePublicDialog = (
